@@ -23,7 +23,7 @@
                 <a href="#features" class="nav-link">Como Funciona</a>
                 <a href="#benefits" class="nav-link">Vantagens</a>
                 <a href="#pricing" class="nav-link">Planos</a>
-                <a href="login.jsp" class="nav-join"><i class="fa-solid fa-user"></i>  Entrar</a>
+                <a href="auth/login/login.jsp" class="nav-join"><i class="fa-solid fa-user"></i>  Entrar</a>
                 <a href="auth/cadastro/cliente.jsp" class="nav-link btn-nav">Cadastrar</a>
             </div>
             <div class="hamburger">
