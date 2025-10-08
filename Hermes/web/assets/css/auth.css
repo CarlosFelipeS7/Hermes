@@ -97,7 +97,7 @@
 
 /* Card de Login */
 .login-card {
-    background: rgba(255, 255, 255, 0.95);
+    background: white;
     backdrop-filter: blur(20px);
     border-radius: var(--border-radius-xl);
     padding: 3rem 2.5rem;
@@ -108,16 +108,6 @@
     text-align: center;
     position: relative;
     overflow: hidden;
-}
-
-.login-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary), var(--accent));
 }
 
 /* Header do Login */
@@ -579,6 +569,42 @@
     width: 100%;
 }
 
+/* Register Button */
+.register-button {
+    /* margin-top: 2rem; */
+    padding-top: -2.5rem;
+    /* border-top: 1px solid #e5e7eb; */
+    color: var(--gray);
+    font-size: 0.9rem;
+}
+
+.register-button a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+    position: relative;
+}
+
+.register-button a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--primary);
+    transition: var(--transition);
+}
+
+.register-button a:hover {
+    color: var(--accent);
+}
+
+.register-button     a:hover::after {
+    width: 100%;
+}
+
 /* Mensagens */
 .message {
     padding: 1.25rem 1.5rem;
@@ -715,7 +741,7 @@
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
     .login-card {
-        background: rgba(17, 24, 39, 0.95);
+        background: white;
         border-color: rgba(255, 255, 255, 0.1);
     }
     
@@ -726,7 +752,7 @@
     .form-input {
         background: #374151;
         border-color: #4b5563;
-        color: white;
+        color: black;
     }
     
     .form-input:focus {

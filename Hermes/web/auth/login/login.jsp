@@ -175,10 +175,14 @@
                     <i class="fas fa-sign-in-alt btn-icon"></i>
                     <div class="btn-shine"></div>
                 </button>
+                        
+                <div class="register-button animated-input" data-delay="500">
+                    <p>Não possui conta? <a href="../cadastro/cadastro.jsp">Cadastre-se</a></p>
+                </div>        
             </form>
             
             <div class="login-footer animated-input" data-delay="500">
-                <p>Voltar para <a href="../index.jsp">página inicial</a></p>
+                <p>Voltar para <a href="../../index.jsp">página inicial</a></p>
             </div>
         </div>
     </div>

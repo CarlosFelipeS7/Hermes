@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <!DOCTYPE html>
 <html lang="pt-BR">
+    
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,6 +13,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
+    
         <!-- Navbar  -->
     <nav class="navbar">
         <div class="nav-container">
@@ -136,5 +138,6 @@
        
     <script src="assets/js/main.js"></script>
     <script src="assets/js/animations.js"></script>
+    <jsp:include page="/components/footer.jsp" />
 </body>
 </html>
