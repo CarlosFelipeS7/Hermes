@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="java.sql.*" %>
 <%
@@ -203,4 +204,22 @@
     <script src="../../assets/js/auth.js"></script>
     <script src="../../assets/js/login-animations.js"></script>
 </body>
+=======
+<%-- 
+    Document   : cadastro
+    Created on : 8 de out. de 2025, 08:48:40
+    Author     : Aluno
+--%>
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JSP Page</title>
+    </head>
+    <body>
+        <h1>Hello World!</h1>
+    </body>
+>>>>>>> 9cb7b79d815ea40440d8f6cd2704b1e7647e43f4
 </html>

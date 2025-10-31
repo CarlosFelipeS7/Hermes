@@ -110,7 +110,11 @@
         <!-- Footer Bottom -->
         <div class="footer-bottom">
             <div class="footer-copyright">
+<<<<<<< HEAD
                 <p>&copy; 2025 Hermes - Sistema de Fretes. Todos os direitos reservados.</p>
+=======
+                <p>&copy; 2024 Hermes Sistema de Fretes. Todos os direitos reservados.</p>
+>>>>>>> 9cb7b79d815ea40440d8f6cd2704b1e7647e43f4
             </div>
             <div class="footer-legal">
                 <a href="../privacidade.jsp">Política de Privacidade</a>
@@ -122,5 +126,8 @@
 </footer>
 
 <!-- Link para o CSS do Footer -->
+<<<<<<< HEAD
 <link rel="stylesheet" href="../assets/css/footer.css">
+=======
+>>>>>>> 9cb7b79d815ea40440d8f6cd2704b1e7647e43f4
 <link rel="stylesheet" href="./assets/css/footer.css">
