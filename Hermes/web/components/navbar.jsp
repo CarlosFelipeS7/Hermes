@@ -1,17 +1,27 @@
-<%-- 
-    Document   : navbar
-    Created on : 3 de out. de 2025, 16:10:17
-    Author     : Administrator
---%>
+<%@ page contentType="text/html;charset=UTF-8" %>
 
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>JSP Page</title>
-    </head>
-    <body>
-        <h1>Hello World!</h1>
-    </body>
-</html>
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="../index.jsp" class="nav-logo">
+            <i class="fas fa-shipping-fast"></i>
+            <span>HERMES</span>
+        </a>
+
+        <div class="nav-menu">
+            <a href="../index.jsp#features" class="nav-link">Como Funciona</a>
+            <a href="../index.jsp#benefits" class="nav-link">Vantagens</a>
+            <a href="../index.jsp#pricing" class="nav-link">Planos</a>
+            <a href="auth/login/login.jsp" class="nav-join">
+                <i class="fa-solid fa-user"></i> Entrar
+            </a>
+            <a href="auth/cadastro/cadastro.jsp" class="nav-link btn-nav">Cadastrar</a>
+        </div>
+
+        <!-- Menu Mobile -->
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+</nav>

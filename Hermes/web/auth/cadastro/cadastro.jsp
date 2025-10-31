@@ -1,52 +1,47 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="java.sql.*" %>
 <%
-    // Variáveis para mensagens e valores preenchidos
     String mensagem = "";
     String email = "";
     String tipoMensagem = "";
-    
-    // Processar formulário se foi submetido
+
     if ("POST".equalsIgnoreCase(request.getMethod())) {
         email = request.getParameter("email");
         String senha = request.getParameter("senha");
+        String tipoUsuarioForm = request.getParameter("tipoUsuario"); // Novo campo
         String lembrar = request.getParameter("lembrar");
-        
-        // Validação básica
+
         if (email == null || email.trim().isEmpty() || 
-            senha == null || senha.trim().isEmpty()) {
-            mensagem = "Por favor, preencha todos os campos.";
+            senha == null || senha.trim().isEmpty() ||
+            tipoUsuarioForm == null || tipoUsuarioForm.trim().isEmpty()) {
+            mensagem = "Por favor, preencha todos os campos e selecione o tipo de usuário.";
             tipoMensagem = "error";
         } else {
             try {
-                // Conexão com banco de dados - AJUSTE SUAS CREDENCIAIS
                 Class.forName("com.mysql.cj.jdbc.Driver");
                 Connection conn = DriverManager.getConnection(
                     "jdbc:mysql://localhost:3306/hermes_db", "usuario", "senha");
-                
-                // Verificar credenciais
-                String sql = "SELECT id, nome, tipo_usuario FROM usuarios WHERE email = ? AND senha = ?";
+
+                String sql = "SELECT id, nome, tipo_usuario FROM usuarios WHERE email = ? AND senha = ? AND tipo_usuario = ?";
                 PreparedStatement stmt = conn.prepareStatement(sql);
                 stmt.setString(1, email);
-                stmt.setString(2, senha); // Na prática, use hash!
-                
+                stmt.setString(2, senha);
+                stmt.setString(3, tipoUsuarioForm);
+
                 ResultSet rs = stmt.executeQuery();
-                
+
                 if (rs.next()) {
-                    // Login bem-sucedido
                     session.setAttribute("usuarioId", rs.getInt("id"));
                     session.setAttribute("usuarioNome", rs.getString("nome"));
                     session.setAttribute("usuarioTipo", rs.getString("tipo_usuario"));
                     session.setAttribute("usuarioEmail", email);
-                    
-                    // Cookie "Lembrar de mim"
+
                     if ("on".equals(lembrar)) {
                         Cookie emailCookie = new Cookie("usuarioEmail", email);
-                        emailCookie.setMaxAge(30 * 24 * 60 * 60); // 30 dias
+                        emailCookie.setMaxAge(30 * 24 * 60 * 60);
                         response.addCookie(emailCookie);
                     }
-                    
-                    // Redirecionar baseado no tipo de usuário
+
                     String tipoUsuario = rs.getString("tipo_usuario");
                     if ("cliente".equals(tipoUsuario)) {
                         response.sendRedirect("../cliente/dashboard.jsp");
@@ -56,14 +51,13 @@
                         response.sendRedirect("../admin/dashboard.jsp");
                     }
                     return;
-                    
                 } else {
-                    mensagem = "E-mail ou senha incorretos.";
+                    mensagem = "E-mail, senha ou tipo incorretos.";
                     tipoMensagem = "error";
                 }
-                
+
                 conn.close();
-                
+
             } catch (Exception e) {
                 mensagem = "Erro no sistema. Tente novamente.";
                 tipoMensagem = "error";
@@ -71,8 +65,7 @@
             }
         }
     }
-    
-    // Verificar cookie "Lembrar de mim"
+
     Cookie[] cookies = request.getCookies();
     if (cookies != null) {
         for (Cookie cookie : cookies) {
@@ -83,6 +76,7 @@
         }
     }
 %>
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -92,11 +86,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../../assets/css/login.css">
+    <link rel="stylesheet" href="../../assets/css/cadastro.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="login-body">
-    <!-- Floating Background Elements -->
     <div class="floating-elements">
         <div class="floating-element element-1"></div>
         <div class="floating-element element-2"></div>
@@ -124,6 +117,7 @@
             <% } %>
             
             <form class="login-form" method="POST" action="login.jsp">
+                <!-- E-mail -->
                 <div class="form-group floating animated-input" data-delay="100">
                     <input 
                         type="email" 
@@ -140,7 +134,8 @@
                     </label>
                     <div class="input-focus-line"></div>
                 </div>
-                
+
+                <!-- Senha -->
                 <div class="form-group floating animated-input" data-delay="200">
                     <input 
                         type="password" 
@@ -159,7 +154,25 @@
                     </button>
                     <div class="input-focus-line"></div>
                 </div>
-                
+
+                <!-- Novo campo: Tipo de Usuário -->
+                <div class="form-group animated-input" data-delay="250">
+                    <label class="form-label" style="font-weight:600; color:var(--primary); margin-bottom:0.5rem;">
+                        <i class="fas fa-user-tag"></i> Tipo de Usuário
+                    </label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="tipoUsuario" value="cliente" required>
+                            <span>Sou Cliente</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="tipoUsuario" value="transportador" required>
+                            <span>Sou Transportador</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Opções -->
                 <div class="form-options animated-input" data-delay="300">
                     <label class="checkbox-container">
                         <input type="checkbox" name="lembrar" <%= email.isEmpty() ? "" : "checked" %>>
@@ -169,15 +182,15 @@
                     <a href="recuperar-senha.jsp" class="forgot-password">Esqueci minha senha</a>
                 </div>
                 
+                <!-- Botão -->
                 <button type="submit" class="btn-login animated-input" data-delay="400">
                     <span class="btn-text">Entrar</span>
-                    <div class="btn-loader"></div>
                     <i class="fas fa-sign-in-alt btn-icon"></i>
                     <div class="btn-shine"></div>
                 </button>
                         
                 <div class="register-button animated-input" data-delay="500">
-                    <p>Não possui conta? <a href="../cadastro/cadastro.jsp">Cadastre-se</a></p>
+                    <p>Ja possui uma conta? <a href="../login/login.jsp">Faça o login</a></p>
                 </div>        
             </form>
             

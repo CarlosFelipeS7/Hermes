@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <!DOCTYPE html>
 <html lang="pt-BR">
+    
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,27 +13,9 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-        <!-- Navbar  -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <i class="fas fa-shipping-fast"></i>
-                <span>HERMES</span>
-            </div>
-            <div class="nav-menu">
-                <a href="#features" class="nav-link">Como Funciona</a>
-                <a href="#benefits" class="nav-link">Vantagens</a>
-                <a href="#pricing" class="nav-link">Planos</a>
-                <a href="auth/login/login.jsp" class="nav-join"><i class="fa-solid fa-user"></i>  Entrar</a>
-                <a href="auth/cadastro/cliente.jsp" class="nav-link btn-nav">Cadastrar</a>
-            </div>
-            <div class="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    </nav>
+    
+    <!-- Navbar -->
+    <jsp:include page="./components/navbar.jsp" />
 
     <!-- Hero Section -->
     <section class="hero">
@@ -46,7 +29,7 @@
                 Conectamos embarcadores e transportadores de forma rápida e segura
             </p>
             <div class="hero-buttons animate-fade-in-delay-2">
-                <a href="auth/cadastro/cliente.jsp" class="btn btn-large btn-primary">
+                <a href="fretes/solicitarFretes.jsp" class="btn btn-large btn-primary">
                     <i class="fas fa-box"></i>
                     Preciso de um frete
                 </a>
@@ -136,5 +119,6 @@
        
     <script src="assets/js/main.js"></script>
     <script src="assets/js/animations.js"></script>
+    <jsp:include page="/components/footer.jsp" />
 </body>
 </html>
