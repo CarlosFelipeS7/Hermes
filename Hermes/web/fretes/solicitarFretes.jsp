@@ -75,7 +75,7 @@
                     <button type="submit" class="btn btn-primary btn-large">
                         <i class="fas fa-paper-plane"></i> Enviar Solicitação
                     </button>
-                    <a href="listaFretes.jsp" class="btn btn-secondary btn-large">
+                    <a href="../fretes/listaFretes.jsp" class="btn btn-secondary btn-large">
                         <i class="fas fa-list"></i> Ver Meus Fretes
                     </a>
                 </div>
