@@ -1,77 +1,89 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="java.sql.*, java.util.*" %>
+<%@ page import="java.util.*" %>
 
-<!--
-<%
-    /* Recupera ID do cliente logado
-    Integer usuarioId = (Integer) session.getAttribute("usuarioId");
-    if (usuarioId == null) {
-        response.sendRedirect("../auth/login/login.jsp");
-        return;
-    }
-
-    List<Map<String, String>> fretes = new ArrayList<>();
-
-    try {
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection conn = DriverManager.getConnection(
-            "jdbc:mysql://localhost:3306/hermes_db", "usuario", "senha");
-
-        String sql = "SELECT id, origem, destino, data, tipo_carga, status FROM fretes WHERE cliente_id = ?";
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        stmt.setInt(1, usuarioId);
-        ResultSet rs = stmt.executeQuery();
-
-        while (rs.next()) {
-            Map<String, String> f = new HashMap<>();
-            f.put("id", rs.getString("id"));
-            f.put("origem", rs.getString("origem"));
-            f.put("destino", rs.getString("destino"));
-            f.put("data", rs.getString("data"));
-            f.put("tipo", rs.getString("tipo_carga"));
-            f.put("status", rs.getString("status"));
-            fretes.add(f);
-        }
-
-        conn.close();
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
-   */
-%>
--->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meus Fretes - Hermes</title>
+    <title>Meus Fretes | Hermes</title>
+
+    <!-- Fontes e ícones -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Estilos principais -->
     <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/fretes.css"> <!-- Arquivo dedicado para o estilo da tabela -->
 </head>
 <body>
     <jsp:include page="../components/navbar.jsp" />
 
-    <section class="features" style="padding-top:8rem;">
-        <div class="container">
+    <section class="frete-section">
+        <div class="frete-container animate-fade-in">
             <h1 class="section-title">Meus Fretes</h1>
-            <p class="section-subtitle">Acompanhe seus pedidos de transporte</p>
+            <p class="section-subtitle">Acompanhe todos os seus pedidos de transporte</p>
 
-            <table class="frete-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Origem</th>
-                        <th>Destino</th>
-                        <th>Data</th>
-                        <th>Tipo</th>
-                        <th>Status</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    
-                </tbody>
-            </table>
+            <div class="frete-grid">
+                <table class="frete-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Origem</th>
+                            <th>Destino</th>
+                            <th>Data</th>
+                            <th>Tipo de Carga</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>001</td>
+                            <td>Jales/SP</td>
+                            <td>Votuporanga/SP</td>
+                            <td>05/11/2025</td>
+                            <td>Residencial</td>
+                            <td><span class="status aguardando">Aguardando</span></td>
+                            <td>
+                                <a href="rastreamento.jsp?id=001" class="btn btn-secondary btn-small">
+                                    <i class="fas fa-route"></i> Ver Rastreamento
+                                </a>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>002</td>
+                            <td>Santa Fé do Sul/SP</td>
+                            <td>Fernandópolis/SP</td>
+                            <td>12/11/2025</td>
+                            <td>Comercial</td>
+                            <td><span class="status andamento">Em Andamento</span></td>
+                            <td>
+                                <a href="rastreamento.jsp?id=002" class="btn btn-secondary btn-small">
+                                    <i class="fas fa-route"></i> Ver Rastreamento
+                                </a>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>003</td>
+                            <td>Urânia/SP</td>
+                            <td>Jales/SP</td>
+                            <td>20/11/2025</td>
+                            <td>Frágil</td>
+                            <td><span class="status entregue">Entregue</span></td>
+                            <td>
+                                <a href="avaliacaoFretes.jsp?id=003" class="btn btn-primary btn-small">
+                                    <i class="fas fa-star"></i> Avaliar
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </section>
 

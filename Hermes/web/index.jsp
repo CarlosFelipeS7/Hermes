@@ -14,32 +14,8 @@
 </head>
 <body>
     
-<<<<<<< HEAD
     <!-- Navbar -->
     <jsp:include page="./components/navbar.jsp" />
-=======
-        <!-- Navbar  -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <i class="fas fa-shipping-fast"></i>
-                <span>HERMES</span>
-            </div>
-            <div class="nav-menu">
-                <a href="#features" class="nav-link">Como Funciona</a>
-                <a href="#benefits" class="nav-link">Vantagens</a>
-                <a href="#pricing" class="nav-link">Planos</a>
-                <a href="auth/login/login.jsp" class="nav-join"><i class="fa-solid fa-user"></i>  Entrar</a>
-                <a href="auth/cadastro/cliente.jsp" class="nav-link btn-nav">Cadastrar</a>
-            </div>
-            <div class="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    </nav>
->>>>>>> 9cb7b79d815ea40440d8f6cd2704b1e7647e43f4
 
     <!-- Hero Section -->
     <section class="hero">
@@ -57,7 +33,7 @@
                     <i class="fas fa-box"></i>
                     Preciso de um frete
                 </a>
-                <a href="auth/cadastro/transportador.jsp" class="btn btn-large btn-secondary">
+                <a href="dashboard/transportador/transportador.jsp" class="btn btn-large btn-secondary">
                     <i class="fas fa-truck"></i>
                     Sou Transportador
                 </a>

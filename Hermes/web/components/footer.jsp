@@ -122,8 +122,4 @@
 </footer>
 
 <!-- Link para o CSS do Footer -->
-<<<<<<< HEAD
 <link rel="stylesheet" href="../assets/css/footer.css">
-=======
->>>>>>> 9cb7b79d815ea40440d8f6cd2704b1e7647e43f4
-<link rel="stylesheet" href="./assets/css/footer.css">
