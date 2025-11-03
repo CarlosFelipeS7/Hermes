@@ -1,86 +1,33 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="java.sql.*" %>
 <%
     // Variáveis para mensagens e valores preenchidos
     String mensagem = "";
     String email = "";
     String tipoMensagem = "";
     
-    // Processar formulário se foi submetido
-    if ("POST".equalsIgnoreCase(request.getMethod())) {
-        email = request.getParameter("email");
-        String senha = request.getParameter("senha");
-        String lembrar = request.getParameter("lembrar");
-        
-        // Validação básica
-        if (email == null || email.trim().isEmpty() || 
-            senha == null || senha.trim().isEmpty()) {
-            mensagem = "Por favor, preencha todos os campos.";
-            tipoMensagem = "error";
-        } else {
-            try {
-                // Conexão com banco de dados - AJUSTE SUAS CREDENCIAIS
-                Class.forName("com.mysql.cj.jdbc.Driver");
-                Connection conn = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/hermes_db", "usuario", "senha");
-                
-                // Verificar credenciais
-                String sql = "SELECT id, nome, tipo_usuario FROM usuarios WHERE email = ? AND senha = ?";
-                PreparedStatement stmt = conn.prepareStatement(sql);
-                stmt.setString(1, email);
-                stmt.setString(2, senha); // Na prática, use hash!
-                
-                ResultSet rs = stmt.executeQuery();
-                
-                if (rs.next()) {
-                    // Login bem-sucedido
-                    session.setAttribute("usuarioId", rs.getInt("id"));
-                    session.setAttribute("usuarioNome", rs.getString("nome"));
-                    session.setAttribute("usuarioTipo", rs.getString("tipo_usuario"));
-                    session.setAttribute("usuarioEmail", email);
-                    
-                    // Cookie "Lembrar de mim"
-                    if ("on".equals(lembrar)) {
-                        Cookie emailCookie = new Cookie("usuarioEmail", email);
-                        emailCookie.setMaxAge(30 * 24 * 60 * 60); // 30 dias
-                        response.addCookie(emailCookie);
-                    }
-                    
-                    // Redirecionar baseado no tipo de usuário
-                    String tipoUsuario = rs.getString("tipo_usuario");
-                    if ("cliente".equals(tipoUsuario)) {
-                        response.sendRedirect("../cliente/dashboard.jsp");
-                    } else if ("transportador".equals(tipoUsuario)) {
-                        response.sendRedirect("../transportador/dashboard.jsp");
-                    } else {
-                        response.sendRedirect("../admin/dashboard.jsp");
-                    }
-                    return;
-                    
-                } else {
-                    mensagem = "E-mail ou senha incorretos.";
-                    tipoMensagem = "error";
+    // Verificar se há mensagens do servlet
+    if (request.getAttribute("mensagem") != null) {
+        mensagem = (String) request.getAttribute("mensagem");
+        tipoMensagem = (String) request.getAttribute("tipoMensagem");
+        email = (String) request.getAttribute("email");
+    }
+    
+    // Verificar cookie "Lembrar de mim" (apenas se não veio do servlet)
+    if (email == null || email.isEmpty()) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("usuarioEmail".equals(cookie.getName())) {
+                    email = cookie.getValue();
+                    break;
                 }
-                
-                conn.close();
-                
-            } catch (Exception e) {
-                mensagem = "Erro no sistema. Tente novamente.";
-                tipoMensagem = "error";
-                e.printStackTrace();
             }
         }
     }
     
-    // Verificar cookie "Lembrar de mim"
-    Cookie[] cookies = request.getCookies();
-    if (cookies != null) {
-        for (Cookie cookie : cookies) {
-            if ("usuarioEmail".equals(cookie.getName())) {
-                email = cookie.getValue();
-                break;
-            }
-        }
+    // Garantir que email não seja null
+    if (email == null) {
+        email = "";
     }
 %>
 <!DOCTYPE html>
@@ -123,7 +70,10 @@
                 </div>
             <% } %>
             
-            <form class="login-form" method="POST" action="login.jsp">
+            <!-- ⚡ MUDANÇA AQUI: Agora aponta para o Servlet -->
+   <form class="login-form" method="POST" action="${pageContext.request.contextPath}/LoginServlet">
+                <input type="hidden" name="action" value="login">
+                
                 <div class="form-group floating animated-input" data-delay="100">
                     <input 
                         type="email" 
@@ -158,6 +108,23 @@
                         <i class="fas fa-eye"></i>
                     </button>
                     <div class="input-focus-line"></div>
+                </div>
+                
+                <!-- ⚡ MUDANÇA AQUI: Adicionar seleção de tipo de usuário -->
+                <div class="form-group animated-input" data-delay="250">
+                    <label class="form-label" style="font-weight:600; color:var(--primary); margin-bottom:0.5rem;">
+                        <i class="fas fa-user-tag"></i> Tipo de Usuário
+                    </label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="tipoUsuario" value="cliente" required>
+                            <span>Sou Cliente</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="tipoUsuario" value="transportador" required>
+                            <span>Sou Transportador</span>
+                        </label>
+                    </div>
                 </div>
                 
                 <div class="form-options animated-input" data-delay="300">

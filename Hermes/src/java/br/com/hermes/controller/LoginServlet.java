@@ -4,6 +4,10 @@
  */
 package br.com.hermes.controller;
 
+import br.com.hermes.dao.ClienteDAO;
+import br.com.hermes.dao.TransportadorDAO;
+import br.com.hermes.model.Cliente;
+import br.com.hermes.model.Transportador;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
@@ -11,6 +15,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  *
@@ -19,30 +24,125 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet(name = "LoginServlet", urlPatterns = {"/LoginServlet"})
 public class LoginServlet extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet LoginServlet</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet LoginServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
+        
+        String action = request.getParameter("action");
+        
+        if ("login".equals(action)) {
+            processLogin(request, response);
+        } else if ("logout".equals(action)) {
+            processLogout(request, response);
+        } else {
+            response.sendRedirect("../auth/login/login.jsp");
         }
+    }
+
+    private void processLogin(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        String email = request.getParameter("email");
+        String senha = request.getParameter("senha");
+        String tipoUsuario = request.getParameter("tipoUsuario");
+        
+        try {
+            boolean loginSucesso = false;
+            String nomeUsuario = "";
+            int idUsuario = 0;
+            
+            if ("cliente".equals(tipoUsuario)) {
+            
+                ClienteDAO clienteDAO = new ClienteDAO();
+                Cliente cliente = autenticarCliente(email, senha, clienteDAO);
+                
+                if (cliente != null) {
+                    loginSucesso = true;
+                    nomeUsuario = cliente.getNome();
+                    idUsuario = cliente.getId();
+                }
+                
+            } else if ("transportador".equals(tipoUsuario)) {
+              
+                TransportadorDAO transportadorDAO = new TransportadorDAO();
+                Transportador transportador = autenticarTransportador(email, senha, transportadorDAO);
+                
+                if (transportador != null) {
+                    loginSucesso = true;
+                    nomeUsuario = transportador.getNome();
+                    idUsuario = transportador.getId();
+                }
+            }
+            
+            if (loginSucesso) {
+           
+                HttpSession session = request.getSession();
+                session.setAttribute("usuarioLogado", true);
+                session.setAttribute("usuarioId", idUsuario);
+                session.setAttribute("usuarioNome", nomeUsuario);
+                session.setAttribute("usuarioEmail", email);
+                session.setAttribute("usuarioTipo", tipoUsuario);
+                
+             
+                String redirectPage = getRedirectPage(tipoUsuario);
+                response.sendRedirect(redirectPage);
+                
+            } else {
+              
+                request.setAttribute("mensagem", "E-mail ou senha incorretos!");
+                request.setAttribute("tipoMensagem", "error");
+                request.setAttribute("email", email);
+                request.getRequestDispatcher("../auth/login/login.jsp").forward(request, response);
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("mensagem", "Erro no sistema. Tente novamente.");
+            request.setAttribute("tipoMensagem", "error");
+            request.getRequestDispatcher("../auth/login/login.jsp").forward(request, response);
+        }
+    }
+    
+    private Cliente autenticarCliente(String email, String senha, ClienteDAO clienteDAO) throws Exception {
+  
+        for (Cliente cliente : clienteDAO.listarTodos()) {
+            if (cliente.getEmail().equals(email) && cliente.getSenha().equals(senha)) {
+                return cliente;
+            }
+        }
+        return null;
+    }
+    
+    private Transportador autenticarTransportador(String email, String senha, TransportadorDAO transportadorDAO) {
+     
+        for (Transportador transportador : transportadorDAO.listarTodos()) {
+            if (transportador.getEmail().equals(email) && transportador.getSenha().equals(senha)) {
+                return transportador;
+            }
+        }
+        return null;
+    }
+    
+    private String getRedirectPage(String tipoUsuario) {
+        switch (tipoUsuario) {
+            case "cliente":
+                return "../fretes/listaFretes.jsp";
+            case "transportador":
+                return "../fretes/listaFretes.jsp";
+            default:
+                return "../index.jsp";
+        }
+    }
+    
+    private void processLogout(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        
+        response.sendRedirect("../auth/login/login.jsp");
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -81,7 +181,6 @@ public class LoginServlet extends HttpServlet {
      */
     @Override
     public String getServletInfo() {
-        return "Short description";
+        return "Servlet de autenticação do sistema Hermes";
     }// </editor-fold>
-
 }
