@@ -6,7 +6,7 @@
 
 <nav class="navbar">
     <div class="nav-container">
-        <a href="<%= base %>/index.jsp" class="nav-logo">
+        <a href=" <%= base %>/index.jsp" class="nav-logo">
             <i class="fas fa-shipping-fast"></i>
             <span>HERMES</span>
         </a>
