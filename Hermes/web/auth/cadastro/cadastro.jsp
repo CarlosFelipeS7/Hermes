@@ -1,46 +1,4 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="java.sql.*" %>
-<%
-    String mensagem = "";
-    String email = "";
-    String tipoMensagem = "";
-
-    if ("POST".equalsIgnoreCase(request.getMethod())) {
-        email = request.getParameter("email");
-        String senha = request.getParameter("senha");
-        String tipoUsuarioForm = request.getParameter("tipoUsuario");
-        String lembrar = request.getParameter("lembrar");
-
-        if (email == null || email.trim().isEmpty() || 
-            senha == null || senha.trim().isEmpty() ||
-            tipoUsuarioForm == null || tipoUsuarioForm.trim().isEmpty()) {
-            mensagem = "Por favor, preencha todos os campos e selecione o tipo de usuário.";
-            tipoMensagem = "error";
-        } else {
-            try {
-                Class.forName("com.mysql.cj.jdbc.Driver");
-                Connection conn = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/hermes_db", "usuario", "senha");
-
-                String sql = "INSERT INTO usuarios (email, senha, tipo_usuario) VALUES (?, ?, ?)";
-                PreparedStatement stmt = conn.prepareStatement(sql);
-                stmt.setString(1, email);
-                stmt.setString(2, senha);
-                stmt.setString(3, tipoUsuarioForm);
-                stmt.executeUpdate();
-                conn.close();
-
-                mensagem = "Cadastro realizado com sucesso!";
-                tipoMensagem = "success";
-            } catch (Exception e) {
-                mensagem = "Erro ao cadastrar. Tente novamente.";
-                tipoMensagem = "error";
-                e.printStackTrace();
-            }
-        }
-    }
-%>
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -53,8 +11,8 @@
     <link rel="stylesheet" href="../../assets/css/cadastro.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="login-body">
 
+<body class="login-body">
     <div class="floating-elements">
         <div class="floating-element element-1"></div>
         <div class="floating-element element-2"></div>
@@ -69,21 +27,23 @@
                     <i class="fas fa-shipping-fast logo-icon"></i>
                     <span class="logo-text">HERMES</span>
                 </div>
-                
+
                 <h1 class="login-title">Crie sua conta</h1>
                 <p class="login-subtitle">Preencha os campos abaixo para se cadastrar</p>
             </div>
 
-            <% if (!mensagem.isEmpty()) { %>
-                <div class="message <%= tipoMensagem %> animated-message">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span><%= mensagem %></span>
+            <form class="login-form" method="POST" action="${pageContext.request.contextPath}/UsuarioServlet">
+                <div class="form-group floating animated-input">
+                    <input type="text" id="nome" name="nome" class="form-input" placeholder=" " required>
+                    <label for="nome" class="form-label">
+                        <i class="fas fa-user"></i>
+                        Nome completo
+                    </label>
+                    <div class="input-focus-line"></div>
                 </div>
-            <% } %>
 
-            <form class="login-form" method="POST" action="cadastro.jsp">
-                <div class="form-group floating animated-input" data-delay="100">
-                    <input type="email" id="email" name="email" class="form-input" placeholder=" " value="<%= email %>" required>
+                <div class="form-group floating animated-input">
+                    <input type="email" id="email" name="email" class="form-input" placeholder=" " required>
                     <label for="email" class="form-label">
                         <i class="fas fa-envelope"></i>
                         E-mail
@@ -91,7 +51,7 @@
                     <div class="input-focus-line"></div>
                 </div>
 
-                <div class="form-group floating animated-input" data-delay="200">
+                <div class="form-group floating animated-input">
                     <input type="password" id="senha" name="senha" class="form-input" placeholder=" " required>
                     <label for="senha" class="form-label">
                         <i class="fas fa-lock"></i>
@@ -100,7 +60,7 @@
                     <div class="input-focus-line"></div>
                 </div>
 
-                <div class="form-group animated-input" data-delay="250">
+                <div class="form-group animated-input">
                     <label class="form-label" style="font-weight:600; color:var(--primary); margin-bottom:0.5rem;">
                         <i class="fas fa-user-tag"></i> Tipo de Usuário
                     </label>
@@ -116,24 +76,39 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn-login animated-input" data-delay="400">
+                <div class="form-group floating animated-input">
+                    <input type="text" id="telefone" name="telefone" class="form-input" placeholder=" ">
+                    <label for="telefone" class="form-label">
+                        <i class="fas fa-phone"></i>
+                        Telefone (opcional)
+                    </label>
+                    <div class="input-focus-line"></div>
+                </div>
+
+                <div class="form-group floating animated-input">
+                    <input type="text" id="endereco" name="endereco" class="form-input" placeholder=" ">
+                    <label for="endereco" class="form-label">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Endereço (opcional)
+                    </label>
+                    <div class="input-focus-line"></div>
+                </div>
+
+                <button type="submit" class="btn-login animated-input">
                     <span class="btn-text">Cadastrar</span>
                     <i class="fas fa-user-plus btn-icon"></i>
                     <div class="btn-shine"></div>
                 </button>
 
-                <div class="register-button animated-input" data-delay="500">
+                <div class="register-button animated-input">
                     <p>Já possui conta? <a href="../login/login.jsp">Faça o login</a></p>
                 </div>
             </form>
 
-            <div class="login-footer animated-input" data-delay="500">
+            <div class="login-footer animated-input">
                 <p>Voltar para <a href="../../index.jsp">página inicial</a></p>
             </div>
         </div>
     </div>
-
-    <script src="../../assets/js/auth.js"></script>
-    <script src="../../assets/js/login-animations.js"></script>
 </body>
 </html>

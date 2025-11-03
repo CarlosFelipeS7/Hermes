@@ -16,9 +16,9 @@ import java.sql.SQLException;
 public class Conexao {
     
     //Dados do banco
-    private static final String URL = "jdbc:postgresql://localhost:5432/Hermes";
+    private static final String URL = "jdbc:hermesdb://localhost:5432/Hermes";
     private static final String USER = "postgres";
-    private static final String PASSWORD = "1012";
+    private static final String PASSWORD = "123456";
     
     public static Connection getConnection() throws SQLException{
         try{

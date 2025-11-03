@@ -110,22 +110,6 @@
                     <div class="input-focus-line"></div>
                 </div>
                 
-                <!-- ⚡ MUDANÇA AQUI: Adicionar seleção de tipo de usuário -->
-                <div class="form-group animated-input" data-delay="250">
-                    <label class="form-label" style="font-weight:600; color:var(--primary); margin-bottom:0.5rem;">
-                        <i class="fas fa-user-tag"></i> Tipo de Usuário
-                    </label>
-                    <div class="radio-group">
-                        <label class="radio-option">
-                            <input type="radio" name="tipoUsuario" value="cliente" required>
-                            <span>Sou Cliente</span>
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="tipoUsuario" value="transportador" required>
-                            <span>Sou Transportador</span>
-                        </label>
-                    </div>
-                </div>
                 
                 <div class="form-options animated-input" data-delay="300">
                     <label class="checkbox-container">

@@ -1,186 +1,49 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package br.com.hermes.controller;
 
-import br.com.hermes.dao.ClienteDAO;
-import br.com.hermes.dao.TransportadorDAO;
-import br.com.hermes.model.Cliente;
-import br.com.hermes.model.Transportador;
+import br.com.hermes.dao.UsuarioDAO;
+import br.com.hermes.model.Usuario;
 import java.io.IOException;
-import java.io.PrintWriter;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.*;
 
-/**
- *
- * @author ccfel
- */
 @WebServlet(name = "LoginServlet", urlPatterns = {"/LoginServlet"})
 public class LoginServlet extends HttpServlet {
 
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        
-        String action = request.getParameter("action");
-        
-        if ("login".equals(action)) {
-            processLogin(request, response);
-        } else if ("logout".equals(action)) {
-            processLogout(request, response);
-        } else {
-            response.sendRedirect("../auth/login/login.jsp");
-        }
-    }
-
-    private void processLogin(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        String email = request.getParameter("email");
-        String senha = request.getParameter("senha");
-        String tipoUsuario = request.getParameter("tipoUsuario");
-        
-        try {
-            boolean loginSucesso = false;
-            String nomeUsuario = "";
-            int idUsuario = 0;
-            
-            if ("cliente".equals(tipoUsuario)) {
-            
-                ClienteDAO clienteDAO = new ClienteDAO();
-                Cliente cliente = autenticarCliente(email, senha, clienteDAO);
-                
-                if (cliente != null) {
-                    loginSucesso = true;
-                    nomeUsuario = cliente.getNome();
-                    idUsuario = cliente.getId();
-                }
-                
-            } else if ("transportador".equals(tipoUsuario)) {
-              
-                TransportadorDAO transportadorDAO = new TransportadorDAO();
-                Transportador transportador = autenticarTransportador(email, senha, transportadorDAO);
-                
-                if (transportador != null) {
-                    loginSucesso = true;
-                    nomeUsuario = transportador.getNome();
-                    idUsuario = transportador.getId();
-                }
-            }
-            
-            if (loginSucesso) {
-           
-                HttpSession session = request.getSession();
-                session.setAttribute("usuarioLogado", true);
-                session.setAttribute("usuarioId", idUsuario);
-                session.setAttribute("usuarioNome", nomeUsuario);
-                session.setAttribute("usuarioEmail", email);
-                session.setAttribute("usuarioTipo", tipoUsuario);
-                
-             
-                String redirectPage = getRedirectPage(tipoUsuario);
-                response.sendRedirect(redirectPage);
-                
-            } else {
-              
-                request.setAttribute("mensagem", "E-mail ou senha incorretos!");
-                request.setAttribute("tipoMensagem", "error");
-                request.setAttribute("email", email);
-                request.getRequestDispatcher("../auth/login/login.jsp").forward(request, response);
-            }
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("mensagem", "Erro no sistema. Tente novamente.");
-            request.setAttribute("tipoMensagem", "error");
-            request.getRequestDispatcher("../auth/login/login.jsp").forward(request, response);
-        }
-    }
-    
-    private Cliente autenticarCliente(String email, String senha, ClienteDAO clienteDAO) throws Exception {
-  
-        for (Cliente cliente : clienteDAO.listarTodos()) {
-            if (cliente.getEmail().equals(email) && cliente.getSenha().equals(senha)) {
-                return cliente;
-            }
-        }
-        return null;
-    }
-    
-    private Transportador autenticarTransportador(String email, String senha, TransportadorDAO transportadorDAO) {
-     
-        for (Transportador transportador : transportadorDAO.listarTodos()) {
-            if (transportador.getEmail().equals(email) && transportador.getSenha().equals(senha)) {
-                return transportador;
-            }
-        }
-        return null;
-    }
-    
-    private String getRedirectPage(String tipoUsuario) {
-        switch (tipoUsuario) {
-            case "cliente":
-                return "../fretes/listaFretes.jsp";
-            case "transportador":
-                return "../fretes/listaFretes.jsp";
-            default:
-                return "../index.jsp";
-        }
-    }
-    
-    private void processLogout(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
-        
-        response.sendRedirect("../auth/login/login.jsp");
-    }
-
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
-    }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
-        return "Servlet de autenticação do sistema Hermes";
-    }// </editor-fold>
+        String email = request.getParameter("email");
+        String senha = request.getParameter("senha");
+        String tipoUsuario = request.getParameter("tipoUsuario");
+
+        try {
+            UsuarioDAO dao = new UsuarioDAO();
+            Usuario usuario = dao.autenticar(email, senha, tipoUsuario);
+
+            if (usuario != null) {
+                HttpSession session = request.getSession();
+                session.setAttribute("usuarioId", usuario.getId());
+                session.setAttribute("usuarioNome", usuario.getNome());
+                session.setAttribute("usuarioTipo", usuario.getTipoUsuario());
+
+                if ("cliente".equals(usuario.getTipoUsuario())) {
+                    response.sendRedirect("cliente/dashboard.jsp");
+                } else if ("transportador".equals(usuario.getTipoUsuario())) {
+                    response.sendRedirect("transportador/dashboard.jsp");
+                } else {
+                    response.sendRedirect("index.jsp");
+                }
+            } else {
+                request.setAttribute("mensagem", "E-mail, senha ou tipo incorretos.");
+                request.getRequestDispatcher("auth/login/login.jsp").forward(request, response);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("mensagem", "Erro no sistema. Tente novamente.");
+            request.getRequestDispatcher("auth/login/login.jsp").forward(request, response);
+        }
+    }
 }
