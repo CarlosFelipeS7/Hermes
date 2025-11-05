@@ -14,6 +14,9 @@ public class UsuarioServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+
         String nome = request.getParameter("nome");
         String email = request.getParameter("email");
         String senha = request.getParameter("senha");
@@ -22,6 +25,16 @@ public class UsuarioServlet extends HttpServlet {
         String endereco = request.getParameter("endereco");
         String veiculo = request.getParameter("veiculo");
         String documento = request.getParameter("documento");
+
+        // 🔹 Validação básica
+        if (nome == null || email == null || senha == null || tipoUsuario == null ||
+            nome.isEmpty() || email.isEmpty() || senha.isEmpty() || tipoUsuario.isEmpty()) {
+
+            request.setAttribute("mensagem", "⚠️ Preencha todos os campos obrigatórios!");
+            request.setAttribute("tipoMensagem", "error");
+            request.getRequestDispatcher("auth/cadastro/cadastro.jsp").forward(request, response);
+            return;
+        }
 
         Usuario u = new Usuario();
         u.setNome(nome);
@@ -36,10 +49,16 @@ public class UsuarioServlet extends HttpServlet {
         try {
             UsuarioDAO dao = new UsuarioDAO();
             dao.inserir(u);
-            response.sendRedirect("auth/login/login.jsp");
+
+            // 🔹 Mensagem de sucesso no próprio JSP
+            request.setAttribute("mensagem", "✅ Cadastro realizado com sucesso!");
+            request.setAttribute("tipoMensagem", "success");
+            request.getRequestDispatcher("auth/cadastro/cadastro.jsp").forward(request, response);
+
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("mensagem", "Erro ao cadastrar usuário: " + e.getMessage());
+            request.setAttribute("mensagem", "❌ Erro ao cadastrar: " + e.getMessage());
+            request.setAttribute("tipoMensagem", "error");
             request.getRequestDispatcher("auth/cadastro/cadastro.jsp").forward(request, response);
         }
     }

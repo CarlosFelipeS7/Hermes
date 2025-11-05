@@ -16,11 +16,10 @@ public class LoginServlet extends HttpServlet {
 
         String email = request.getParameter("email");
         String senha = request.getParameter("senha");
-        String tipoUsuario = request.getParameter("tipoUsuario");
 
         try {
             UsuarioDAO dao = new UsuarioDAO();
-            Usuario usuario = dao.autenticar(email, senha, tipoUsuario);
+            Usuario usuario = dao.autenticar(email, senha);
 
             if (usuario != null) {
                 HttpSession session = request.getSession();
@@ -28,21 +27,27 @@ public class LoginServlet extends HttpServlet {
                 session.setAttribute("usuarioNome", usuario.getNome());
                 session.setAttribute("usuarioTipo", usuario.getTipoUsuario());
 
-                if ("cliente".equals(usuario.getTipoUsuario())) {
-                    response.sendRedirect("cliente/dashboard.jsp");
-                } else if ("transportador".equals(usuario.getTipoUsuario())) {
-                    response.sendRedirect("transportador/dashboard.jsp");
+                // Redirecionamento automático conforme o tipo
+                String tipo = usuario.getTipoUsuario();
+                if ("cliente".equalsIgnoreCase(tipo)) {
+                    response.sendRedirect(request.getContextPath() + "/dashboard/cliente/cliente.jsp");
+                } else if ("transportador".equalsIgnoreCase(tipo)) {
+                    response.sendRedirect(request.getContextPath() + "/dashboard/transportador/transportador.jsp");
                 } else {
-                    response.sendRedirect("index.jsp");
+                    response.sendRedirect(request.getContextPath() + "/index.jsp");
                 }
+
             } else {
-                request.setAttribute("mensagem", "E-mail, senha ou tipo incorretos.");
+                request.setAttribute("mensagem", "E-mail ou senha incorretos.");
+                request.setAttribute("tipoMensagem", "error");
+                request.setAttribute("email", email);
                 request.getRequestDispatcher("auth/login/login.jsp").forward(request, response);
             }
 
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("mensagem", "Erro no sistema. Tente novamente.");
+            request.setAttribute("tipoMensagem", "error");
             request.getRequestDispatcher("auth/login/login.jsp").forward(request, response);
         }
     }

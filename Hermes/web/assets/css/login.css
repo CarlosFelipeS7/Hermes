@@ -447,6 +447,7 @@
 .radio-option {
     display: flex;
     align-items: center;
+    color: var(--gray);
     padding: 1rem 1.25rem;
     border: 2px solid #e5e7eb;
     border-radius: var(--border-radius);

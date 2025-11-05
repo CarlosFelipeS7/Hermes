@@ -5,7 +5,7 @@ public class Usuario {
     private String nome;
     private String email;
     private String senha;
-    private String tipoUsuario; // cliente | transportador | admin
+    private String tipoUsuario;
     private String telefone;
     private String endereco;
     private String veiculo;
