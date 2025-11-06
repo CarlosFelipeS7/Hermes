@@ -30,7 +30,7 @@ public class LoginServlet extends HttpServlet {
                 // Redirecionamento automático conforme o tipo
                 String tipo = usuario.getTipoUsuario();
                 if ("cliente".equalsIgnoreCase(tipo)) {
-                    response.sendRedirect(request.getContextPath() + "/dashboard/cliente/cliente.jsp");
+                    response.sendRedirect(request.getContextPath() + "/dashboard/clientes/clientes.jsp");
                 } else if ("transportador".equalsIgnoreCase(tipo)) {
                     response.sendRedirect(request.getContextPath() + "/dashboard/transportador/transportador.jsp");
                 } else {
@@ -41,14 +41,14 @@ public class LoginServlet extends HttpServlet {
                 request.setAttribute("mensagem", "E-mail ou senha incorretos.");
                 request.setAttribute("tipoMensagem", "error");
                 request.setAttribute("email", email);
-                request.getRequestDispatcher("auth/login/login.jsp").forward(request, response);
+                request.getRequestDispatcher("/auth/login/login.jsp").forward(request, response);
             }
 
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("mensagem", "Erro no sistema. Tente novamente.");
             request.setAttribute("tipoMensagem", "error");
-            request.getRequestDispatcher("auth/login/login.jsp").forward(request, response);
+            request.getRequestDispatcher("/auth/login/login.jsp").forward(request, response);
         }
     }
 }

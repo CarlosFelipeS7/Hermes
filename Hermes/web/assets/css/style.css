@@ -119,6 +119,34 @@ body {
     transition: var(--transition);
 }
 
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-name {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.logout-btn {
+    background: var(--primary);
+    color: white !important;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    transition: 0.3s;
+}
+
+.logout-btn:hover {
+    background: var(--primary-dark);
+}
+
+
+span.user-name {
+    margin-right: 8px !important;
+}
+
 /* Botões Modernos */
 .btn {
     display: inline-flex;

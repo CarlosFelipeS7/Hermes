@@ -13,10 +13,20 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
     <!-- CSS principal -->
-    <link rel="stylesheet" href="../assets/css/fretes.css">
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/fretes.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/footer.css">
 </head>
 <body>
+    <% if (request.getAttribute("mensagem") != null) { %>
+    <div class="alert-overlay">
+        <div class="alert-box <%= request.getAttribute("tipoMensagem") %>">
+            <i class="fas <%= "success".equals(request.getAttribute("tipoMensagem")) ? "fa-check-circle" : "fa-exclamation-triangle" %>"></i>
+            <span><%= request.getAttribute("mensagem") %></span>
+        </div>
+    </div>
+<% } %>
+
 
     <!-- Navbar -->
     <jsp:include page="../components/navbar.jsp" />
@@ -27,7 +37,7 @@
             <h1 class="section-title">Solicitar Frete</h1>
             <p class="section-subtitle">Preencha as informações abaixo para encontrar o transportador ideal.</p>
 
-            <form class="frete-form" method="POST" action="#">
+            <form class="frete-form" method="POST" action="${pageContext.request.contextPath}/FreteServlet">
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="origem">Origem</label>
@@ -87,4 +97,15 @@
     <script src="assets/js/animations.js"></script>
     <jsp:include page="/components/footer.jsp" />
 </body>
+<script>
+setTimeout(() => {
+    const alertBox = document.querySelector('.alert-overlay');
+    if (alertBox) {
+        alertBox.style.transition = 'opacity 0.5s';
+        alertBox.style.opacity = '0';
+        setTimeout(() => alertBox.remove(), 600);
+    }
+}, 4000);
+</script>
+
 </html>

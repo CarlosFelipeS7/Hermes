@@ -1,35 +1,14 @@
+<%@page import="com.sun.jdi.connect.spi.Connection"%>
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="java.util.*" %>
 
-<!--
 <%
-    // 🔒 Backend (comentado)
-    // Integer usuarioId = (Integer) session.getAttribute("usuarioId");
-    // String nome = (String) session.getAttribute("usuarioNome");
-    // if (usuarioId == null) {
-    //     response.sendRedirect("../auth/login/login.jsp");
-    //     return;
-    // }
-
-    // try {
-    //     Class.forName("com.mysql.cj.jdbc.Driver");
-    //     Connection conn = DriverManager.getConnection(
-    //         "jdbc:mysql://localhost:3306/hermes_db", "usuario", "senha");
-    //
-    //     String sql = "SELECT * FROM fretes WHERE status = 'Disponível'";
-    //     PreparedStatement stmt = conn.prepareStatement(sql);
-    //     ResultSet rs = stmt.executeQuery();
-    //
-    //     while (rs.next()) {
-    //         ...
-    //     }
-    //
-    //     conn.close();
-    // } catch (Exception e) {
-    //     e.printStackTrace();
-    // }
+    String nome = (String) session.getAttribute("usuarioNome");
+    if (nome == null) {
+        response.sendRedirect("../../auth/login/login.jsp");
+        return;
+    }
 %>
--->
 
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -58,7 +37,7 @@
 
             <div class="dashboard-header">
                 <h1 class="section-title">Painel do Transportador</h1>
-                <p class="section-subtitle">Bem-vindo, <strong>João Carlos</strong>! Veja os fretes disponíveis e gerencie suas entregas.</p>
+                <p class="section-subtitle">Bem-vindo, <strong><%= nome %></strong>! Veja os fretes disponíveis e gerencie suas entregas.</p>
             </div>
 
             <!-- Cards de estatísticas -->
@@ -126,7 +105,7 @@
 
         </div>
     </section>
-
     <jsp:include page="../../components/footer.jsp" />
 </body>
+
 </html>

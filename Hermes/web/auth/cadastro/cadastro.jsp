@@ -174,7 +174,7 @@
 
                 <!-- Link de login -->
                 <div class="register-button animated-input">
-                    <p>Já possui conta? <a href="../login/login.jsp">Faça o login</a></p>
+                    <p>Já possui conta? <a href="${pageContext.request.contextPath}/auth/login/login.jsp">Faça o login</a></p>
                 </div>
             </form>
 

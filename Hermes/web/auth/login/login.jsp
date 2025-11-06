@@ -128,7 +128,7 @@
                 </button>
                         
                 <div class="register-button animated-input" data-delay="500">
-                    <p>Não possui conta? <a href="../cadastro/cadastro.jsp">Cadastre-se</a></p>
+                    <p>Não possui conta? <a href="${pageContext.request.contextPath}/auth/cadastro/cadastro.jsp">Cadastre-se</a></p>
                 </div>        
             </form>
             
@@ -141,17 +141,5 @@
     <script src="../../assets/js/auth.js"></script>
     <script src="../../assets/js/login-animations.js"></script>
 </body>
-
-<%
-    String sucesso = (String) session.getAttribute("cadastroSucesso");
-    if (sucesso != null) {
-%>
-    <div class="message success">
-        <i class="fas fa-check-circle"></i> <%= sucesso %>
-    </div>
-<%
-        session.removeAttribute("cadastroSucesso");
-    }
-%>
 
 </html>
