@@ -61,7 +61,7 @@
 
             <!-- Lista de fretes disponíveis -->
             <div class="fretes-grid">
-                <h2 class="fretes-title">Fretes Disponíveis</h2>
+                <h2 class="fretes-title">Fretes Recentes</h2>
 
                 <div class="frete-card">
                     <div class="frete-info">

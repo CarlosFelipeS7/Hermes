@@ -1,8 +1,9 @@
 package br.com.hermes.controller;
 
+import br.com.hermes.dao.FreteDAO;
 import br.com.hermes.model.Frete;
-import br.com.hermes.service.FreteService;
 import java.io.IOException;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
@@ -10,63 +11,91 @@ import javax.servlet.http.*;
 @WebServlet(name = "FreteServlet", urlPatterns = {"/FreteServlet"})
 public class FreteServlet extends HttpServlet {
 
-    private final FreteService service = new FreteService();
+    // 🔹 LISTAR FRETES (CLIENTE OU TRANSPORTADOR)
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
+        HttpSession session = request.getSession();
+        String tipoUsuario = (String) session.getAttribute("usuarioTipo");
+        Integer idUsuario = (Integer) session.getAttribute("usuarioId");
+
+        if (idUsuario == null || tipoUsuario == null) {
+            response.sendRedirect("auth/login/login.jsp");
+            return;
+        }
+
+        try {
+            FreteDAO dao = new FreteDAO();
+
+            if ("cliente".equalsIgnoreCase(tipoUsuario)) {
+                // 🔧 Corrigido: usar método que busca os fretes do cliente
+                List<Frete> fretes = dao.listarFretesCliente(idUsuario, 50);
+                request.setAttribute("fretes", fretes);
+
+                // 🔧 Caminho correto do JSP
+                request.getRequestDispatcher("/fretes/listaFretes.jsp").forward(request, response);
+
+            } else if ("transportador".equalsIgnoreCase(tipoUsuario)) {
+                // 🔧 Lista fretes pendentes
+                List<Frete> fretes = dao.listarFretesRecentesDisponiveis(50);
+                request.setAttribute("fretes", fretes);
+
+                // 🔧 Caminho correto do JSP
+                request.getRequestDispatcher("fretes/listaFretesTransportador.jsp").forward(request, response);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("mensagem", "Erro ao carregar fretes: " + e.getMessage());
+            request.setAttribute("tipoMensagem", "error");
+            request.getRequestDispatcher("erro.jsp").forward(request, response);
+        }
+    }
+
+    // 🔹 ACEITAR FRETE (TRANSPORTADOR)
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        request.setCharacterEncoding("UTF-8");
-        response.setCharacterEncoding("UTF-8");
+        HttpSession session = request.getSession();
+        Integer idTransportador = (Integer) session.getAttribute("usuarioId");
+        String action = request.getParameter("action");
 
-        String origem = request.getParameter("origem");
-        String destino = request.getParameter("destino");
-        String descricao = request.getParameter("observacoes");
-        String pesoStr = request.getParameter("peso");
-        double peso = 0;
-        double valor = 0;
+        if (idTransportador == null) {
+            response.sendRedirect("auth/login/login.jsp");
+            return;
+        }
 
         try {
-            if (pesoStr != null && !pesoStr.isEmpty()) {
-                peso = Double.parseDouble(pesoStr);
+            if ("aceitar".equals(action)) {
+                int idFrete = Integer.parseInt(request.getParameter("idFrete"));
+                FreteDAO dao = new FreteDAO();
+                dao.aceitarFrete(idFrete, idTransportador);
+
+                // ✅ Feedback
+                request.setAttribute("mensagem", "✅ Frete aceito com sucesso!");
+                request.setAttribute("tipoMensagem", "success");
             }
-
-            HttpSession session = request.getSession(false);
-            if (session == null || session.getAttribute("usuarioId") == null) {
-                request.setAttribute("mensagem", "⚠️ É necessário estar logado para solicitar um frete.");
-                request.setAttribute("tipoMensagem", "error");
-                request.getRequestDispatcher("fretes/solicitarFretes.jsp").forward(request, response);
-                return;
-            }
-
-            int idCliente = (int) session.getAttribute("usuarioId");
-
-            Frete f = new Frete();
-            f.setOrigem(origem);
-            f.setDestino(destino);
-            f.setDescricaoCarga(descricao);
-            f.setPeso(peso);
-            f.setValor(valor);
-            f.setIdCliente(idCliente);
-
-            service.cadastrarFrete(f);
-
-            // 🔹 Sucesso
-            request.setAttribute("mensagem", "✅ Frete solicitado com sucesso!");
-            request.setAttribute("tipoMensagem", "success");
-            request.getRequestDispatcher("fretes/solicitarFretes.jsp").forward(request, response);
-
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-            request.setAttribute("mensagem", "❌ O campo peso deve ser numérico.");
-            request.setAttribute("tipoMensagem", "error");
-            request.getRequestDispatcher("fretes/solicitarFretes.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("mensagem", "❌ Erro ao cadastrar frete: " + e.getMessage());
+            request.setAttribute("mensagem", "❌ Erro ao aceitar frete: " + e.getMessage());
             request.setAttribute("tipoMensagem", "error");
-            request.getRequestDispatcher("fretes/solicitarFretes.jsp").forward(request, response);
+        }
+
+        // 🔄 Recarrega lista atualizada
+        try {
+            FreteDAO dao = new FreteDAO();
+            List<Frete> fretes = dao.listarFretesRecentesDisponiveis(50);
+            request.setAttribute("fretes", fretes);
+
+            // 🔧 Caminho correto do JSP
+            request.getRequestDispatcher("fretes/listaFretesTransportador.jsp").forward(request, response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect("erro.jsp");
         }
     }
 }

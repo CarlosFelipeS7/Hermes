@@ -6,7 +6,6 @@ import java.util.*;
 
 public class FreteDAO {
 
-    // Inserir novo frete
     public void inserir(Frete f) throws Exception {
         String sql = """
             INSERT INTO frete (origem, destino, descricao_carga, peso, valor, status, data_solicitacao, id_cliente)
@@ -15,7 +14,6 @@ public class FreteDAO {
 
         try (Connection conn = Conexao.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setString(1, f.getOrigem());
             stmt.setString(2, f.getDestino());
             stmt.setString(3, f.getDescricaoCarga());
@@ -26,14 +24,16 @@ public class FreteDAO {
         }
     }
 
-    // Listar fretes de um cliente
-    public List<Frete> listarPorCliente(int idCliente) throws Exception {
+    // Lista fretes de um cliente
+    public List<Frete> listarFretesCliente(int idCliente, int limit) throws Exception {
+        String sql = "SELECT * FROM frete WHERE id_cliente = ? ORDER BY data_solicitacao DESC LIMIT ?";
         List<Frete> fretes = new ArrayList<>();
-        String sql = "SELECT * FROM frete WHERE id_cliente = ? ORDER BY data_solicitacao DESC";
 
         try (Connection conn = Conexao.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setInt(1, idCliente);
+            stmt.setInt(2, limit);
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -46,21 +46,22 @@ public class FreteDAO {
                 f.setValor(rs.getDouble("valor"));
                 f.setStatus(rs.getString("status"));
                 f.setDataSolicitacao(rs.getTimestamp("data_solicitacao"));
-                f.setDataConclusao(rs.getTimestamp("data_conclusao"));
+                f.setIdCliente(rs.getInt("id_cliente"));
                 fretes.add(f);
             }
         }
         return fretes;
     }
 
-    // Listar fretes disponíveis (para transportadores)
-    public List<Frete> listarDisponiveis() throws Exception {
+    // Lista fretes disponíveis para transportador
+    public List<Frete> listarFretesRecentesDisponiveis(int limit) throws Exception {
+        String sql = "SELECT * FROM frete WHERE status = 'PENDENTE' ORDER BY data_solicitacao DESC LIMIT ?";
         List<Frete> fretes = new ArrayList<>();
-        String sql = "SELECT * FROM frete WHERE status = 'PENDENTE' ORDER BY data_solicitacao DESC";
 
         try (Connection conn = Conexao.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, limit);
+            ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
                 Frete f = new Frete();
@@ -71,19 +72,19 @@ public class FreteDAO {
                 f.setPeso(rs.getDouble("peso"));
                 f.setValor(rs.getDouble("valor"));
                 f.setStatus(rs.getString("status"));
+                f.setDataSolicitacao(rs.getTimestamp("data_solicitacao"));
+                f.setIdCliente(rs.getInt("id_cliente"));
                 fretes.add(f);
             }
         }
         return fretes;
     }
 
-    // Atualizar status e transportador
+    // Aceitar frete
     public void aceitarFrete(int idFrete, int idTransportador) throws Exception {
-        String sql = "UPDATE frete SET status='EM ANDAMENTO', id_transportador=? WHERE id=?";
-
+        String sql = "UPDATE frete SET status='ACEITO', id_transportador=? WHERE id=?";
         try (Connection conn = Conexao.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setInt(1, idTransportador);
             stmt.setInt(2, idFrete);
             stmt.executeUpdate();
