@@ -9,7 +9,7 @@
 
 <nav class="navbar">
     <div class="nav-container">
-    <link rel="stylesheet" href="../../assets/css/navbar.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navbar.css">
         <a href="<%= base %>/index.jsp" class="nav-logo">
             <i class="fas fa-shipping-fast"></i>
             <span>HERMES</span>
@@ -28,7 +28,7 @@
             <% } else { %>
                 <!-- 🔹 Navbar para usuários logados -->
                 <% if ("cliente".equals(tipoUsuario)) { %>
-                    <a href="<%= base %>/dashboard/clientes/clientes.jsp" class="nav-link">Dashboard</a>
+                    <a href="<%= base %>/dashboard/clientes/clientes.jsp" class="nav-link">Painel do Cliente</a>
                 <% } else if ("transportador".equals(tipoUsuario)) { %>
                     <a href="<%= base %>/dashboard/transportador/transportador.jsp" class="nav-link">Painel do Transportador</a>
                 <% } %>

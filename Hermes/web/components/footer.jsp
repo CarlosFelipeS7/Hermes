@@ -122,4 +122,4 @@
 </footer>
 
 <!-- Link para o CSS do Footer -->
-<link rel="stylesheet" href="../assets/css/footer.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/footer.css">
