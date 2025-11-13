@@ -1,0 +1,34 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css to edit this template
+*/
+/* 
+    Created on : 13 de nov. de 2025, 10:20:57
+    Author     : ccfel
+*/
+
+/* ====== TAMANHO DO LOGO ====== */
+
+.nav-logo img.logo-img {
+    height: 100px !important;   /* ⬅ aumenta aqui */
+    width: auto !important;
+    object-fit: contain;
+    display: block;
+}
+
+/* Impede que fontes e ícones da nav influenciem o tamanho */
+.nav-logo {
+    display: flex;
+    align-items: center;
+    
+}
+
+.nav-logo span {
+    font-size: 1.6rem;
+    font-weight: 700;
+}
+
+/* Aproxima a imagem do texto */
+.nav-logo span {
+    margin-left: -45px !important;   /* APROXIMA */
+}

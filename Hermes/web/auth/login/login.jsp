@@ -54,10 +54,18 @@
     <div class="login-container">
         <div class="login-card">
             <div class="login-header">
-                <div class="login-logo">
-                    <i class="fas fa-shipping-fast logo-icon"></i>
-                    <span class="logo-text">HERMES</span>
-                </div>
+                            <div class="login-logo">
+                <a href="${pageContext.request.contextPath}/index.jsp" class="nav-logo">
+
+                     <img src="${pageContext.request.contextPath}/assets/images/LogoOficial.png"
+                    
+                          alt="Logo Hermes" 
+                          class="logo-img">
+
+                     <span class="logo-text">HERMES</span>
+                 </a>
+             </div>
+
                 
                 <h1 class="login-title">Bem-vindo de volta</h1>
                 <p class="login-subtitle">Entre em sua conta para continuar</p>

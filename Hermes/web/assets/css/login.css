@@ -779,3 +779,10 @@
         transition-duration: 0.01ms !important;
     }
 }
+
+
+/* Força um tamanho menor pra logo só na tela de login */
+.login-logo .nav-logo img.logo-img {
+    height: 8px !important;
+    max-height: 8px !important;
+}

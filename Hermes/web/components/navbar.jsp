@@ -10,10 +10,14 @@
 <nav class="navbar">
     <div class="nav-container">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navbar.css">
-        <a href="<%= base %>/index.jsp" class="nav-logo">
-            <i class="fas fa-shipping-fast"></i>
-            <span>HERMES</span>
-        </a>
+              <a href="<%= base %>/index.jsp" class="nav-logo">
+    <img src="<%= base %>/assets/images/LogoOficial.png" alt="Logo Hermes" class="logo-img">
+    <span>HERMES</span>
+</a>
+
+
+                    <link/>
+
 
         <div class="nav-menu">
             <% if (nomeUsuario == null) { %>
