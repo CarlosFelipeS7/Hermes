@@ -47,7 +47,6 @@
                         <p><strong>Descrição:</strong> <%= f.getDescricaoCarga() %></p>
                         <p><strong>Peso:</strong> <%= f.getPeso() %> kg</p>
                         <p><strong>Valor:</strong> R$ <%= f.getValor() %></p>
-                        <p><strong>ID Cliente:</strong> <%= f.getIdCliente() %></p>
                     </div>
 
                     <form method="POST" action="${pageContext.request.contextPath}/FreteServlet">

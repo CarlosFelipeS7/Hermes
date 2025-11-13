@@ -4,6 +4,8 @@
     String nome = (String) session.getAttribute("usuarioNome");
     String tipoUsuario = (String) session.getAttribute("usuarioTipo");
     boolean logado = (nome != null && tipoUsuario != null);
+
+    String base = request.getContextPath();
 %>
 
 <!DOCTYPE html>
@@ -53,7 +55,7 @@
                             <i class="fas fa-truck-loading"></i>
                             Lista de Fretes
                         </a>
-                        <a href="dashboard/transportador/transportador.jsp" class="btn btn-large btn-secondary">
+                        <a href="<%= base %>/dashboardTransportador" class="btn btn-large btn-secondary">
                             <i class="fas fa-tachometer-alt"></i>
                             Ver Painel
                         </a>

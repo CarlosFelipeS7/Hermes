@@ -1,9 +1,10 @@
-<%@page import="com.sun.jdi.connect.spi.Connection"%>
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ page import="java.util.*" %>
+<%@ page import="java.util.*, br.com.hermes.model.Frete" %>
 
 <%
     String nome = (String) session.getAttribute("usuarioNome");
+    List<Frete> fretes = (List<Frete>) request.getAttribute("fretes");
+
     if (nome == null) {
         response.sendRedirect("../../auth/login/login.jsp");
         return;
@@ -15,18 +16,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Transportador | Hermes</title>
+    <title>Painel do Transportador | Hermes</title>
 
-    <!-- Fontes e ícones -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-
-    <!-- Estilos -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/dashboard.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/footer.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 
 <body>
@@ -37,7 +32,7 @@
 
             <div class="dashboard-header">
                 <h1 class="section-title">Painel do Transportador</h1>
-                <p class="section-subtitle">Bem-vindo, <strong><%= nome %></strong>! Veja os fretes disponíveis e gerencie suas entregas.</p>
+                <p class="section-subtitle">Bem-vindo, <strong><%= nome %></strong>! Veja os fretes disponíveis para aceitar.</p>
             </div>
 
             <!-- Cards de estatísticas -->
@@ -45,67 +40,47 @@
                 <div class="stat-card">
                     <i class="fas fa-truck-pickup"></i>
                     <h3>Fretes Disponíveis</h3>
-                    <p class="stat-number">8</p>
+                    <p class="stat-number"><%= fretes != null ? fretes.size() : 0 %></p>
                 </div>
+
                 <div class="stat-card">
                     <i class="fas fa-route"></i>
                     <h3>Em Andamento</h3>
-                    <p class="stat-number">3</p>
+                    <p class="stat-number">0</p>
                 </div>
+
                 <div class="stat-card">
                     <i class="fas fa-check-circle"></i>
                     <h3>Concluídos</h3>
-                    <p class="stat-number">12</p>
+                    <p class="stat-number">0</p>
                 </div>
             </div>
 
-            <!-- Lista de fretes disponíveis -->
+            <!-- Lista de fretes reais -->
             <div class="fretes-grid">
                 <h2 class="fretes-title">Fretes Recentes</h2>
+                    <% 
+                    List<Frete> recentes = (List<Frete>) request.getAttribute("recentes");
+                    if (recentes != null && !recentes.isEmpty()) {
+                        for (Frete f : recentes) { %>
 
-                <div class="frete-card">
-                    <div class="frete-info">
-                        <h3><i class="fas fa-map-marker-alt"></i> Jales/SP → Votuporanga/SP</h3>
-                        <p><strong>Tipo:</strong> Residencial</p>
-                        <p><strong>Data:</strong> 10/11/2025</p>
-                        <p><strong>Valor:</strong> R$ 380,00</p>
-                    </div>
-                    <div class="frete-actions">
-                        <button class="btn btn-primary btn-small"><i class="fas fa-check"></i> Aceitar</button>
-                        <a href="#" class="btn btn-secondary btn-small"><i class="fas fa-info-circle"></i> Ver Detalhes</a>
-                    </div>
-                </div>
+                        <div class="frete-card">
+                            <div class="frete-info">
+                                <h3><i class="fas fa-map-marker-alt"></i> <%= f.getOrigem() %> → <%= f.getDestino() %></h3>
+                                <p><strong>Descrição:</strong> <%= f.getDescricaoCarga() %></p>
+                                <p><strong>Peso:</strong> <%= f.getPeso() %> kg</p>
+                                <p><strong>Valor:</strong> R$ <%= f.getValor() %></p>
+                            </div>
+                        </div>
 
-                <div class="frete-card">
-                    <div class="frete-info">
-                        <h3><i class="fas fa-map-marker-alt"></i> Santa Fé do Sul/SP → Fernandópolis/SP</h3>
-                        <p><strong>Tipo:</strong> Comercial</p>
-                        <p><strong>Data:</strong> 12/11/2025</p>
-                        <p><strong>Valor:</strong> R$ 450,00</p>
-                    </div>
-                    <div class="frete-actions">
-                        <button class="btn btn-primary btn-small"><i class="fas fa-check"></i> Aceitar</button>
-                        <a href="#" class="btn btn-secondary btn-small"><i class="fas fa-info-circle"></i> Ver Detalhes</a>
-                    </div>
-                </div>
-
-                <div class="frete-card">
-                    <div class="frete-info">
-                        <h3><i class="fas fa-map-marker-alt"></i> Urânia/SP → Jales/SP</h3>
-                        <p><strong>Tipo:</strong> Frágil</p>
-                        <p><strong>Data:</strong> 18/11/2025</p>
-                        <p><strong>Valor:</strong> R$ 250,00</p>
-                    </div>
-                    <div class="frete-actions">
-                        <button class="btn btn-primary btn-small"><i class="fas fa-check"></i> Aceitar</button>
-                        <a href="#" class="btn btn-secondary btn-small"><i class="fas fa-info-circle"></i> Ver Detalhes</a>
-                    </div>
-                </div>
+                    <% }} else { %>
+                        <p style="color:gray;">Nenhum frete recente.</p>
+                    <% } %>
             </div>
 
         </div>
     </section>
+
     <jsp:include page="../../components/footer.jsp" />
 </body>
-
 </html>

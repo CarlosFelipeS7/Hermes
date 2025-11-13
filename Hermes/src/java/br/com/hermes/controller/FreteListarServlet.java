@@ -28,20 +28,22 @@ public class FreteListarServlet extends HttpServlet {
             FreteDAO dao = new FreteDAO();
 
             if ("cliente".equalsIgnoreCase(tipoUsuario)) {
-                List<Frete> fretes = dao.listarFretesCliente(idUsuario, 50); // mostra todos do cliente
+                List<Frete> fretes = dao.listarFretesCliente(idUsuario, 50);
                 request.setAttribute("fretes", fretes);
-                request.getRequestDispatcher("fretes/listaFretesCliente.jsp").forward(request, response);
+                request.getRequestDispatcher("/fretes/listaFretes.jsp")
+                       .forward(request, response);
 
             } else if ("transportador".equalsIgnoreCase(tipoUsuario)) {
-                List<Frete> fretes = dao.listarFretesRecentesDisponiveis(50); // disponíveis
+                List<Frete> fretes = dao.listarTodosDisponiveis();
                 request.setAttribute("fretes", fretes);
-                request.getRequestDispatcher("fretes/listaFretesTransportador.jsp").forward(request, response);
+                request.getRequestDispatcher("/fretes/listaFretesTransportador.jsp")
+                       .forward(request, response);
             }
 
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("mensagem", "Erro ao carregar fretes: " + e.getMessage());
-            request.getRequestDispatcher("erro.jsp").forward(request, response);
+            request.getRequestDispatcher("/erro.jsp").forward(request, response);
         }
     }
 }

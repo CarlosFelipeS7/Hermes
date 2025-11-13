@@ -2,18 +2,20 @@ package br.com.hermes.dao;
 
 import br.com.hermes.model.Frete;
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FreteDAO {
 
     public void inserir(Frete f) throws Exception {
         String sql = """
             INSERT INTO frete (origem, destino, descricao_carga, peso, valor, status, data_solicitacao, id_cliente)
-            VALUES (?, ?, ?, ?, ?, 'PENDENTE', CURRENT_TIMESTAMP, ?)
+            VALUES (?, ?, ?, ?, ?, 'pendente', CURRENT_TIMESTAMP, ?)
         """;
 
         try (Connection conn = Conexao.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setString(1, f.getOrigem());
             stmt.setString(2, f.getDestino());
             stmt.setString(3, f.getDescricaoCarga());
@@ -24,7 +26,7 @@ public class FreteDAO {
         }
     }
 
-    // Lista fretes de um cliente
+    // Lista fretes de um cliente (com limite)
     public List<Frete> listarFretesCliente(int idCliente, int limit) throws Exception {
         String sql = "SELECT * FROM frete WHERE id_cliente = ? ORDER BY data_solicitacao DESC LIMIT ?";
         List<Frete> fretes = new ArrayList<>();
@@ -53,14 +55,49 @@ public class FreteDAO {
         return fretes;
     }
 
-    // Lista fretes disponíveis para transportador
+    // Lista fretes PENDENTES com limite (genérico)
     public List<Frete> listarFretesRecentesDisponiveis(int limit) throws Exception {
-        String sql = "SELECT * FROM frete WHERE status = 'PENDENTE' ORDER BY data_solicitacao DESC LIMIT ?";
+        String sql = "SELECT * FROM frete WHERE LOWER(status) = 'pendente' " +
+                     "ORDER BY data_solicitacao DESC LIMIT ?";
         List<Frete> fretes = new ArrayList<>();
 
         try (Connection conn = Conexao.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setInt(1, limit);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Frete f = new Frete();
+                f.setId(rs.getInt("id"));
+                f.setOrigem(rs.getString("origem"));
+                f.setDestino(rs.getString("destino"));
+                f.setDescricaoCarga(rs.getString("descricao_carga"));
+                f.setPeso(rs.getDouble("peso"));
+                f.setValor(rs.getDouble("valor"));
+                f.setStatus(rs.getString("status"));
+                f.setDataSolicitacao(rs.getTimestamp("data_solicitacao"));
+                f.setIdCliente(rs.getInt("id_cliente"));
+                fretes.add(f);
+            }
+        }
+        return fretes;
+    }
+
+    // 3 fretes pendentes mais recentes – para o dashboard do transportador
+    public List<Frete> listarTresRecentes() throws Exception {
+        return listarFretesRecentesDisponiveis(3);
+    }
+
+    // Todos fretes pendentes – para lista completa do transportador
+    public List<Frete> listarTodosDisponiveis() throws Exception {
+        String sql = "SELECT * FROM frete WHERE LOWER(status) = 'pendente' " +
+                     "ORDER BY data_solicitacao DESC";
+        List<Frete> fretes = new ArrayList<>();
+
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -82,9 +119,10 @@ public class FreteDAO {
 
     // Aceitar frete
     public void aceitarFrete(int idFrete, int idTransportador) throws Exception {
-        String sql = "UPDATE frete SET status='ACEITO', id_transportador=? WHERE id=?";
+        String sql = "UPDATE frete SET status='aceito', id_transportador=? WHERE id=?";
         try (Connection conn = Conexao.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setInt(1, idTransportador);
             stmt.setInt(2, idFrete);
             stmt.executeUpdate();

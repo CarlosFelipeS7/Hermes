@@ -18,7 +18,6 @@ public class DashboardServlet extends HttpServlet {
         HttpSession session = request.getSession();
         String tipoUsuario = (String) session.getAttribute("usuarioTipo");
         Integer idUsuario = (Integer) session.getAttribute("usuarioId");
-        String nome = (String) session.getAttribute("usuarioNome");
 
         if (idUsuario == null || tipoUsuario == null) {
             response.sendRedirect("auth/login/login.jsp");
@@ -31,11 +30,14 @@ public class DashboardServlet extends HttpServlet {
             if ("cliente".equalsIgnoreCase(tipoUsuario)) {
                 List<Frete> fretes = dao.listarFretesCliente(idUsuario, 5);
                 request.setAttribute("fretesCliente", fretes);
-                request.getRequestDispatcher("dashboard/cliente/cliente.jsp").forward(request, response);
+                request.getRequestDispatcher("dashboard/cliente/cliente.jsp")
+                       .forward(request, response);
+
             } else if ("transportador".equalsIgnoreCase(tipoUsuario)) {
-                List<Frete> fretes = dao.listarFretesRecentesDisponiveis(3);
-                request.setAttribute("fretesDisponiveis", fretes);
-                request.getRequestDispatcher("dashboard/transportador/transportador.jsp").forward(request, response);
+                List<Frete> fretes = dao.listarTresRecentes(); // 3 últimos
+                request.setAttribute("fretesRecentes", fretes);
+                request.getRequestDispatcher("dashboard/transportador/transportador.jsp")
+                       .forward(request, response);
             }
 
         } catch (Exception e) {

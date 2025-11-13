@@ -14,10 +14,16 @@ public class Frete {
     private Timestamp dataConclusao;
     private int idCliente;
     private Integer idTransportador;
+    private String nomeCliente;
 
     // Getters e Setters
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
+    
+
+    public String getNomeCliente() { return nomeCliente; }
+    public void setNomeCliente(String nomeCliente) { this.nomeCliente = nomeCliente; }
+
 
     public String getOrigem() { return origem; }
     public void setOrigem(String origem) { this.origem = origem; }
