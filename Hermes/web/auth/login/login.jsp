@@ -40,6 +40,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/login.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navbar.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="login-body">
@@ -54,20 +55,17 @@
     <div class="login-container">
         <div class="login-card">
             <div class="login-header">
-                            <div class="login-logo">
-                <a href="${pageContext.request.contextPath}/index.jsp" class="nav-logo">
+                <div class="login-logo">
+                    <a href="${pageContext.request.contextPath}/index.jsp" class="nav-logo">
+                        <img src="${pageContext.request.contextPath}/assets/images/LogoOficial.png"
+                             alt="Logo Hermes"
+                             class="logo-img">
+                    </a>
+                </div>
 
-                     <img src="${pageContext.request.contextPath}/assets/images/LogoOficial.png"
-                    
-                          alt="Logo Hermes" 
-                          class="logo-img">
-
-                     <span class="logo-text">HERMES</span>
-                 </a>
-             </div>
 
                 
-                <h1 class="login-title">Bem-vindo de volta</h1>
+                <h1 class="login-title">Bem-vindo</h1>
                 <p class="login-subtitle">Entre em sua conta para continuar</p>
             </div>
             

@@ -62,13 +62,17 @@
             <!-- Cabeçalho -->
             <div class="login-header">
                 <div class="login-logo">
-                    <i class="fas fa-shipping-fast logo-icon"></i>
-                    <span class="logo-text">HERMES</span>
+                    <a href="${pageContext.request.contextPath}/index.jsp" class="nav-logo">
+                        <img src="${pageContext.request.contextPath}/assets/images/LogoOficial.png"
+                             alt="Logo Hermes"
+                             class="logo-img">
+                    </a>
                 </div>
 
                 <h1 class="login-title">Crie sua conta</h1>
                 <p class="login-subtitle">Preencha os campos abaixo para se cadastrar</p>
             </div>
+
 
             <!-- Formulário de cadastro -->
             <form class="login-form" method="POST" action="${pageContext.request.contextPath}/UsuarioServlet">

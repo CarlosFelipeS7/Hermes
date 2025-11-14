@@ -2,7 +2,6 @@ package br.com.hermes.service;
 
 import br.com.hermes.dao.FreteDAO;
 import br.com.hermes.model.Frete;
-
 import java.util.List;
 
 public class FreteService {
@@ -38,8 +37,9 @@ public class FreteService {
         freteDAO.inserir(frete);
     }
 
+
     // ==========================================================
-    // ACEITAR FRETE
+    // ACEITAR FRETE (transportador)
     // ==========================================================
     public void aceitarFrete(int idFrete, int idTransportador) throws Exception {
 
@@ -52,8 +52,33 @@ public class FreteService {
         freteDAO.aceitarFrete(idFrete, idTransportador);
     }
 
+
     // ==========================================================
-    // LISTAR FRETES DO CLIENTE
+    // INICIAR FRETE (status → EM_ANDAMENTO)
+    // ==========================================================
+    public void iniciarFrete(int idFrete) throws Exception {
+
+        if (idFrete <= 0)
+            throw new Exception("ID do frete inválido.");
+
+        freteDAO.iniciarFrete(idFrete);
+    }
+
+
+    // ==========================================================
+    // CONCLUIR FRETE (status → CONCLUIDO)
+    // ==========================================================
+    public void concluirFrete(int idFrete) throws Exception {
+
+        if (idFrete <= 0)
+            throw new Exception("ID do frete inválido.");
+
+        freteDAO.concluirFrete(idFrete);
+    }
+
+
+    // ==========================================================
+    // LISTAR FRETES DO CLIENTE (limit customizado)
     // ==========================================================
     public List<Frete> listarFretesCliente(int idCliente, int limit) throws Exception {
 
@@ -63,15 +88,53 @@ public class FreteService {
         return freteDAO.listarFretesCliente(idCliente, limit);
     }
 
-    // ==========================================================
-    // LISTAR FRETES DISPONÍVEIS (pendentes para transportador)
-    // ==========================================================
-    public List<Frete> listarFretesDisponiveis() throws Exception {
-        return freteDAO.listarPendentesTodos(); // ← aqui corrigimos
-    }
 
     // ==========================================================
-    // AUXILIAR
+    // LISTAR ÚLTIMOS 3 FRETES RECENTES DO CLIENTE
+    // ==========================================================
+    public List<Frete> listarFretesRecentesCliente(int idCliente) throws Exception {
+
+        if (idCliente <= 0)
+            throw new Exception("ID do cliente inválido.");
+
+        return freteDAO.listarFretesRecentesCliente(idCliente);
+    }
+
+
+    // ==========================================================
+    // LISTAR FRETES DISPONÍVEIS PARA TRANSPORTADOR
+    // ==========================================================
+    public List<Frete> listarFretesDisponiveis() throws Exception {
+        return freteDAO.listarPendentesTodos();
+    }
+
+
+    // ==========================================================
+    // LISTAR FRETES EM ANDAMENTO DO TRANSPORTADOR
+    // ==========================================================
+    public List<Frete> listarFretesEmAndamento(int idTransportador) throws Exception {
+
+        if (idTransportador <= 0)
+            throw new Exception("ID do transportador inválido.");
+
+        return freteDAO.listarFretesEmAndamento(idTransportador);
+    }
+
+
+    // ==========================================================
+    // LISTAR FRETES CONCLUÍDOS DO TRANSPORTADOR
+    // ==========================================================
+    public List<Frete> listarFretesConcluidos(int idTransportador) throws Exception {
+
+        if (idTransportador <= 0)
+            throw new Exception("ID do transportador inválido.");
+
+        return freteDAO.listarFretesConcluidos(idTransportador);
+    }
+
+
+    // ==========================================================
+    // Função auxiliar
     // ==========================================================
     private boolean isVazio(String valor) {
         return valor == null || valor.trim().isEmpty();

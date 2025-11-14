@@ -32,9 +32,9 @@
             <% } else { %>
                 <!-- 🔹 Navbar para usuários logados -->
                 <% if ("cliente".equals(tipoUsuario)) { %>
-                    <a href="<%= base %>/dashboard/clientes/clientes.jsp" class="nav-link">Painel do Cliente</a>
+                    <a href="${pageContext.request.contextPath}/dashboardCliente">Painel do Cliente</a>
                 <% } else if ("transportador".equals(tipoUsuario)) { %>
-                    <a href="<%= base %>/dashboardTransportador" class="nav-link">Painel do Transportador</a>
+                    <a href="${pageContext.request.contextPath}/dashboardTransportador">Painel do Transportador</a>
                 <% } %>
 
                 <div class="user-menu">

@@ -1,5 +1,33 @@
 @import url('./login.css');
 
+/* Logo nas telas de autenticação */
+.login-logo .nav-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.login-logo .logo-img {
+    height: 100px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+}
+
+.login-logo .logo-text {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: 0.2rem;
+    color: var(--primary, #04553a);
+}
+
+.login-logo .nav-logo img.logo-img {
+    height: 125px !important;
+    max-height: 130px !important;
+}
+
 /* Ajustes específicos do cadastro */
 .login-card {
   max-height: 90vh;

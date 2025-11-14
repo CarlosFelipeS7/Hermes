@@ -9,7 +9,7 @@ import javax.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "FreteTransportadorServlet", urlPatterns = {"/FreteTransportadorServlet"})
+@WebServlet(name = "FreteTransportadorServlet", urlPatterns = {"/dashboardTransportador"})
 public class FreteTransportadorServlet extends HttpServlet {
 
     @Override
@@ -31,23 +31,23 @@ public class FreteTransportadorServlet extends HttpServlet {
 
             FreteDAO dao = new FreteDAO();
 
-            // 3 fretes pendentes mais recentes do sistema (fretes disponíveis)
-            List<Frete> fretesRecentes = dao.listarPendentes(3);
+            // Últimos 3 fretes ACEITOS por este transportador
+            List<Frete> recentes = dao.listarFretesTransportador(idTransportador);
 
-            request.setAttribute("fretesRecentes", fretesRecentes);
+            // Fretes disponíveis (pendentes)
+            List<Frete> fretesDisponiveis = dao.listarPendentesTodos();
+
+            request.setAttribute("fretesRecentes", recentes);
+            request.setAttribute("fretesDisponiveis", fretesDisponiveis);
 
             request.getRequestDispatcher("/dashboard/transportador/transportador.jsp")
                    .forward(request, response);
 
         } catch (Exception e) {
-            e.printStackTrace();
             tratarErro(request, response, "Erro ao carregar dashboard do transportador: " + e.getMessage());
         }
     }
 
-    // ==========================================================
-    // ERRO PADRONIZADO
-    // ==========================================================
     private void tratarErro(HttpServletRequest request, HttpServletResponse response, String msg)
             throws ServletException, IOException {
 

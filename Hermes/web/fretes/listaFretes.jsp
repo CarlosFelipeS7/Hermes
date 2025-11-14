@@ -1,13 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="java.util.*, br.com.hermes.model.Frete" %>
 
-
 <%
-    if (request.getAttribute("fretes") == null) {
-    response.sendRedirect(request.getContextPath() + "/FreteListarServlet");
-    return;
-}
-    
     String nome = (String) session.getAttribute("usuarioNome");
     List<Frete> fretes = (List<Frete>) request.getAttribute("fretes");
 
@@ -17,78 +11,73 @@
     }
 %>
 
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <title>Meus Fretes | Hermes</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/fretes.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
 </head>
 
 <body>
-    <jsp:include page="../components/navbar.jsp" />
+<jsp:include page="../components/navbar.jsp" />
 
-    <section class="frete-section">
-        <div class="frete-container animate-fade-in">
-            <h1 class="section-title">Meus Fretes</h1>
-            <p class="section-subtitle">Acompanhe todos os fretes que você solicitou</p>
+<section class="frete-section">
+    <div class="frete-container">
 
-            <div class="frete-grid">
-                <table class="frete-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Origem</th>
-                            <th>Destino</th>
-                            <th>Data Solicitação</th>
-                            <th>Peso (kg)</th>
-                            <th>Valor (R$)</th>
-                            <th>Status</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (fretes != null && !fretes.isEmpty()) { %>
-                            <% for (Frete f : fretes) { %>
-                                <tr>
-                                    <td><%= f.getId() %></td>
-                                    <td><%= f.getOrigem() %></td>
-                                    <td><%= f.getDestino() %></td>
-                                    <td><%= f.getDataSolicitacao() != null ? f.getDataSolicitacao().toString().substring(0, 10) : "-" %></td>
-                                    <td><%= f.getPeso() %></td>
-                                    <td><%= String.format("%.2f", f.getValor()) %></td>
-                                    <td><span class="status <%= f.getStatus() %>"><%= f.getStatus() %></span></td>
-                                    <td>
-                                        <% if ("aceito".equalsIgnoreCase(f.getStatus())) { %>
-                                            <a href="rastreamento.jsp?id=<%= f.getId() %>" class="btn btn-secondary btn-small">
-                                                <i class="fas fa-route"></i> Rastrear
-                                            </a>
-                                        <% } else if ("concluído".equalsIgnoreCase(f.getStatus())) { %>
-                                            <a href="avaliacaoFretes.jsp?id=<%= f.getId() %>" class="btn btn-primary btn-small">
-                                                <i class="fas fa-star"></i> Avaliar
-                                            </a>
-                                        <% } else { %>
-                                            <span style="color:gray;">—</span>
-                                        <% } %>
-                                    </td>
-                                </tr>
+        <h1 class="section-title">Meus Fretes</h1>
+
+        <table class="frete-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Origem</th>
+                <th>Destino</th>
+                <th>Data</th>
+                <th>Peso</th>
+                <th>Valor</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <% if (fretes != null && !fretes.isEmpty()) { %>
+                <% for (Frete f : fretes) { %>
+                    <tr>
+                        <td><%= f.getId() %></td>
+                        <td><%= f.getOrigem() %></td>
+                        <td><%= f.getDestino() %></td>
+                        <td><%= f.getDataSolicitacao().toLocalDateTime().toLocalDate() %></td>
+                        <td><%= f.getPeso() %> kg</td>
+                        <td>R$ <%= String.format("%.2f", f.getValor()) %></td>
+                        <td>
+                            <span class="status <%= f.getStatus() %>"><%= f.getStatus() %></span>
+                        </td>
+
+                        <td>
+                            <% if ("aceito".equalsIgnoreCase(f.getStatus())) { %>
+                                <a class="btn btn-secondary btn-small"
+                                   href="rastreamento.jsp?id=<%= f.getId() %>">Rastrear</a>
+                            <% } else if ("concluido".equalsIgnoreCase(f.getStatus())) { %>
+                                <a class="btn btn-primary btn-small"
+                                   href="avaliacaoFretes.jsp?id=<%= f.getId() %>">Avaliar</a>
+                            <% } else { %>
+                                <span>—</span>
                             <% } %>
-                        <% } else { %>
-                            <tr>
-                                <td colspan="8" style="text-align:center; color:gray;">
-                                    Nenhum frete encontrado.
-                                </td>
-                            </tr>
-                        <% } %>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </section>
+                        </td>
+                    </tr>
+                <% } %>
+            <% } else { %>
+            <tr><td colspan="8">Nenhum frete encontrado.</td></tr>
+            <% } %>
+            </tbody>
+        </table>
 
-    <jsp:include page="../components/footer.jsp" />
+    </div>
+</section>
+
+<jsp:include page="../components/footer.jsp" />
 </body>
 </html>

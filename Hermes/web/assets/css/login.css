@@ -124,10 +124,8 @@
     font-weight: 800;
     color: var(--primary);
     margin-bottom: 1.5rem;
-    padding: 0.75rem 1.5rem;
     background: rgba(4, 85, 58, 0.1);
     border-radius: var(--border-radius-lg);
-    border: 1px solid rgba(4, 85, 58, 0.2);
 }
 
 .login-logo i {
@@ -781,8 +779,7 @@
 }
 
 
-/* Força um tamanho menor pra logo só na tela de login */
 .login-logo .nav-logo img.logo-img {
-    height: 8px !important;
-    max-height: 8px !important;
+    height: 125px !important;
+    max-height: 135px !important;
 }
