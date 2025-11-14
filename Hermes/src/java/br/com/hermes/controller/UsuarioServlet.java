@@ -1,65 +1,66 @@
 package br.com.hermes.controller;
 
-import br.com.hermes.dao.UsuarioDAO;
 import br.com.hermes.model.Usuario;
-import java.io.IOException;
+import br.com.hermes.service.UsuarioService;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
+import java.io.IOException;
 
 @WebServlet(name = "UsuarioServlet", urlPatterns = {"/UsuarioServlet"})
 public class UsuarioServlet extends HttpServlet {
+
+    private final UsuarioService usuarioService = new UsuarioService();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         request.setCharacterEncoding("UTF-8");
-        response.setCharacterEncoding("UTF-8");
 
         String nome = request.getParameter("nome");
         String email = request.getParameter("email");
         String senha = request.getParameter("senha");
         String tipoUsuario = request.getParameter("tipoUsuario");
         String telefone = request.getParameter("telefone");
-        String endereco = request.getParameter("endereco");
-        String veiculo = request.getParameter("veiculo");
-        String documento = request.getParameter("documento");
-
-        // 🔹 Validação básica
-        if (nome == null || email == null || senha == null || tipoUsuario == null ||
-            nome.isEmpty() || email.isEmpty() || senha.isEmpty() || tipoUsuario.isEmpty()) {
-
-            request.setAttribute("mensagem", "⚠️ Preencha todos os campos obrigatórios!");
-            request.setAttribute("tipoMensagem", "error");
-            request.getRequestDispatcher("auth/cadastro/cadastro.jsp").forward(request, response);
-            return;
-        }
-
-        Usuario u = new Usuario();
-        u.setNome(nome);
-        u.setEmail(email);
-        u.setSenha(senha);
-        u.setTipoUsuario(tipoUsuario);
-        u.setTelefone(telefone);
-        u.setEndereco(endereco);
-        u.setVeiculo(veiculo);
-        u.setDocumento(documento);
 
         try {
-            UsuarioDAO dao = new UsuarioDAO();
-            dao.inserir(u);
+            // Criar objeto usuário
+            Usuario u = new Usuario();
+            u.setNome(nome);
+            u.setEmail(email);
+            u.setSenha(senha);
+            u.setTipoUsuario(tipoUsuario);
+            u.setTelefone(telefone);
 
-            // 🔹 Mensagem de sucesso no próprio JSP
-            request.setAttribute("mensagem", "✅ Cadastro realizado com sucesso!");
-            request.setAttribute("tipoMensagem", "success");
-            request.getRequestDispatcher("auth/cadastro/cadastro.jsp").forward(request, response);
+            // Chamando SERVICE (não mais o DAO direto)
+            usuarioService.cadastrar(u);
+
+            // Mensagem pós-sucesso via sessão
+            HttpSession session = request.getSession();
+            session.setAttribute("mensagemCadastro", "Cadastro realizado com sucesso!");
+            session.setAttribute("tipoMensagemCadastro", "success");
+
+            // Redirect para login (evita reenviar formulário)
+            response.sendRedirect(request.getContextPath() + "/auth/login/login.jsp");
 
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("mensagem", "❌ Erro ao cadastrar: " + e.getMessage());
-            request.setAttribute("tipoMensagem", "error");
-            request.getRequestDispatcher("auth/cadastro/cadastro.jsp").forward(request, response);
+            enviarErro(request, response, e.getMessage());
         }
+    }
+
+    // ==========================================================
+    // MÉTODOS AUXILIARES
+    // ==========================================================
+    private void enviarErro(HttpServletRequest request, HttpServletResponse response, String mensagem)
+            throws ServletException, IOException {
+
+        request.setAttribute("mensagem", mensagem);
+        request.setAttribute("tipoMensagem", "error");
+
+        request.getRequestDispatcher("/auth/cadastro/cadastro.jsp")
+                .forward(request, response);
     }
 }

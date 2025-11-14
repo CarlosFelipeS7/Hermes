@@ -1,87 +1,97 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package br.com.hermes.controller;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import br.com.hermes.model.Avaliacao;
+import br.com.hermes.service.AvaliacaoService;
 
-/**
- *
- * @author ccfel
- */
+import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.*;
+import java.io.File;
+import java.io.IOException;
+
 @WebServlet(name = "AvaliacaoServlet", urlPatterns = {"/AvaliacaoServlet"})
+@MultipartConfig(maxFileSize = 1024 * 1024 * 5) // 5MB
 public class AvaliacaoServlet extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet AvaliacaoServlet</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet AvaliacaoServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    }
+    private final AvaliacaoService avaliacaoService = new AvaliacaoService();
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+
+        HttpSession session = request.getSession(false);
+
+        // ===========================
+        // 1) Validar login
+        // ===========================
+        if (session == null || session.getAttribute("usuarioId") == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login/login.jsp");
+            return;
+        }
+
+        try {
+            // ===========================
+            // 2) Campos do formulário
+            // ===========================
+            String idFreteStr = request.getParameter("idFrete");
+            String notaStr = request.getParameter("nota");
+            String comentario = request.getParameter("comentario");
+
+            int idFrete = Integer.parseInt(idFreteStr);
+            int nota = Integer.parseInt(notaStr);
+
+            // ===========================
+            // 3) Upload da foto
+            // ===========================
+            Part fotoPart = request.getPart("foto");
+            String nomeFoto = null;
+
+            if (fotoPart != null && fotoPart.getSize() > 0) {
+
+                String uploadPath = request.getServletContext().getRealPath("/uploads");
+
+                File uploadDir = new File(uploadPath);
+                if (!uploadDir.exists()) uploadDir.mkdir();
+
+                String originalName = fotoPart.getSubmittedFileName();
+                nomeFoto = System.currentTimeMillis() + "_" + originalName;
+
+                fotoPart.write(uploadPath + File.separator + nomeFoto);
+            }
+
+            // ===========================
+            // 4) Criar objeeto Avaliacao
+            // ===========================
+            Avaliacao av = new Avaliacao();
+            av.setIdFrete(idFrete);
+            av.setNota(nota);
+            av.setComentario(comentario);
+            av.setFoto(nomeFoto);
+
+            // ===========================
+            // 5) Salvar via SERVICE
+            // ===========================
+            avaliacaoService.avaliar(av);
+
+            // ===========================
+            // 6) Redirecionar para sucesso
+            // ===========================
+            response.sendRedirect(request.getContextPath() + "/pages/avaliacao/enviado.jsp");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirecionarErro(request, response, e.getMessage());
+        }
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
+    // ===========================
+    // ERRO PADRONIZADO
+    // ===========================
+    private void redirecionarErro(HttpServletRequest request, HttpServletResponse response, String msg)
+            throws IOException {
 
+        request.getSession().setAttribute("mensagemErroAvaliacao", msg);
+        response.sendRedirect(request.getContextPath() + "/pages/avaliacao/erro.jsp");
+    }
 }

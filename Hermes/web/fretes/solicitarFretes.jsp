@@ -9,10 +9,15 @@
 
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/fretes.css">
+
+    <!-- Ícones -->
+    <link rel="stylesheet" 
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
 
+<!-- MENSAGEM DO SERVLET -->
 <% if (request.getAttribute("mensagem") != null) { %>
 <div class="alert-overlay">
     <div class="alert-box <%= request.getAttribute("tipoMensagem") %>">
@@ -31,9 +36,16 @@
         <h1 class="section-title">Solicitar Frete</h1>
         <p class="section-subtitle">Preencha todos os dados para enviar sua solicitação.</p>
 
-        <form class="frete-form" action="<%= request.getContextPath() %>/FreteServlet" method="POST">
+        <!-- FORMULÁRIO (compatível com FreteServlet) -->
+        <form class="frete-form" 
+              action="<%= request.getContextPath() %>/FreteServlet" 
+              method="POST">
+
+            <!-- Identifica que a ação é CRIAR -->
+            <input type="hidden" name="action" value="criar">
 
             <div class="form-grid">
+
                 <div class="form-group">
                     <label>Origem</label>
                     <input type="text" name="origem" required>
@@ -45,33 +57,15 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Data da Coleta</label>
-                    <input type="date" name="data" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Horário</label>
-                    <input type="time" name="horario" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Tipo da Carga</label>
-                    <select name="tipoCarga" required>
-                        <option value="">Selecione</option>
-                        <option value="Residencial">Residencial</option>
-                        <option value="Comercial">Comercial</option>
-                        <option value="Frágil">Frágil</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
                     <label>Peso (kg)</label>
                     <input type="number" name="peso" min="1" required>
                 </div>
 
                 <div class="form-group full">
-                    <label>Observações</label>
-                    <textarea name="observacoes" rows="4"></textarea>
+                    <label>Descrição / Observações</label>
+                    <textarea name="descricao" rows="4"
+                              placeholder="Ex: eletrodomésticos frágeis, embalados, etc."
+                              required></textarea>
                 </div>
 
             </div>

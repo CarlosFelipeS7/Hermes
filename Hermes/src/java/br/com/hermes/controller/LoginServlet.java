@@ -1,14 +1,17 @@
 package br.com.hermes.controller;
 
-import br.com.hermes.dao.UsuarioDAO;
 import br.com.hermes.model.Usuario;
-import java.io.IOException;
+import br.com.hermes.service.UsuarioService;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
+import java.io.IOException;
 
 @WebServlet(name = "LoginServlet", urlPatterns = {"/LoginServlet"})
 public class LoginServlet extends HttpServlet {
+
+    private final UsuarioService usuarioService = new UsuarioService();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -18,37 +21,72 @@ public class LoginServlet extends HttpServlet {
         String senha = request.getParameter("senha");
 
         try {
-            UsuarioDAO dao = new UsuarioDAO();
-            Usuario usuario = dao.autenticar(email, senha);
+            // ============================================
+            // AUTENTICAÇÃO VIA SERVICE (NÃO MAIS DAO)
+            // ============================================
+            Usuario usuario = usuarioService.autenticar(email, senha);
 
-            if (usuario != null) {
-                HttpSession session = request.getSession();
-                session.setAttribute("usuarioId", usuario.getId());
-                session.setAttribute("usuarioNome", usuario.getNome());
-                session.setAttribute("usuarioTipo", usuario.getTipoUsuario());
+            // Criar sessão do usuário
+            HttpSession session = request.getSession();
+            session.setAttribute("usuarioId", usuario.getId());
+            session.setAttribute("usuarioNome", usuario.getNome());
+            session.setAttribute("usuarioTipo", usuario.getTipoUsuario());
 
-                // Redirecionamento automático conforme o tipo
-                String tipo = usuario.getTipoUsuario();
-                if ("cliente".equalsIgnoreCase(tipo)) {
-                    response.sendRedirect(request.getContextPath() + "/dashboard/clientes/clientes.jsp");
-                } else if ("transportador".equalsIgnoreCase(tipo)) {
-                    response.sendRedirect(request.getContextPath() + "/dashboard/transportador/transportador.jsp");
-                } else {
-                    response.sendRedirect(request.getContextPath() + "/index.jsp");
-                }
-
-            } else {
-                request.setAttribute("mensagem", "E-mail ou senha incorretos.");
-                request.setAttribute("tipoMensagem", "error");
-                request.setAttribute("email", email);
-                request.getRequestDispatcher("/auth/login/login.jsp").forward(request, response);
-            }
+            // Redireciona conforme o tipo
+            redirecionarUsuario(usuario, request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("mensagem", "Erro no sistema. Tente novamente.");
-            request.setAttribute("tipoMensagem", "error");
-            request.getRequestDispatcher("/auth/login/login.jsp").forward(request, response);
+            enviarErro(e.getMessage(), email, request, response);
         }
+    }
+
+    // =====================================================
+    // Redirecionamento por tipo de usuário
+    // =====================================================
+    private void redirecionarUsuario(Usuario usuario,
+                                     HttpServletRequest request,
+                                     HttpServletResponse response)
+            throws IOException {
+
+        String tipo = usuario.getTipoUsuario().toLowerCase();
+
+        switch (tipo) {
+            case "cliente":
+                response.sendRedirect(request.getContextPath() +
+                        "/dashboard/clientes/clientes.jsp");
+                break;
+
+            case "transportador":
+                response.sendRedirect(request.getContextPath() +
+                        "/dashboard/transportador/transportador.jsp");
+                break;
+
+            case "admin":
+            case "administrador":
+                response.sendRedirect(request.getContextPath() +
+                        "/dashboard/admin/admin.jsp");
+                break;
+
+            default:
+                response.sendRedirect(request.getContextPath() + "/index.jsp");
+                break;
+        }
+    }
+
+    // =====================================================
+    // Método para enviar erros para o login
+    // =====================================================
+    private void enviarErro(String mensagem, String email,
+                            HttpServletRequest request,
+                            HttpServletResponse response)
+            throws ServletException, IOException {
+
+        request.setAttribute("mensagem", mensagem);
+        request.setAttribute("tipoMensagem", "error");
+        request.setAttribute("email", email);
+
+        request.getRequestDispatcher("/auth/login/login.jsp")
+                .forward(request, response);
     }
 }
