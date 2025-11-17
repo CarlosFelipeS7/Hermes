@@ -19,8 +19,8 @@ public class FreteTransportadorServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
 
         if (session == null ||
-            session.getAttribute("usuarioId") == null ||
-            !"transportador".equalsIgnoreCase((String) session.getAttribute("usuarioTipo"))) {
+                session.getAttribute("usuarioId") == null ||
+                !"transportador".equalsIgnoreCase((String) session.getAttribute("usuarioTipo"))) {
 
             response.sendRedirect(request.getContextPath() + "/auth/login/login.jsp");
             return;
@@ -31,19 +31,28 @@ public class FreteTransportadorServlet extends HttpServlet {
 
             FreteDAO dao = new FreteDAO();
 
-            // Últimos 3 fretes ACEITOS por este transportador
+            // Últimos 3 fretes aceitos
             List<Frete> recentes = dao.listarFretesTransportador(idTransportador);
 
             // Fretes disponíveis (pendentes)
             List<Frete> fretesDisponiveis = dao.listarPendentesTodos();
 
+            // Em andamento
+            List<Frete> fretesEmAndamento = dao.listarFretesEmAndamento(idTransportador);
+
+            // Concluídos
+            List<Frete> fretesConcluidos = dao.listarFretesConcluidos(idTransportador);
+
             request.setAttribute("fretesRecentes", recentes);
             request.setAttribute("fretesDisponiveis", fretesDisponiveis);
+            request.setAttribute("fretesEmAndamento", fretesEmAndamento);
+            request.setAttribute("fretesConcluidos", fretesConcluidos);
 
             request.getRequestDispatcher("/dashboard/transportador/transportador.jsp")
-                   .forward(request, response);
+                    .forward(request, response);
 
         } catch (Exception e) {
+            e.printStackTrace();
             tratarErro(request, response, "Erro ao carregar dashboard do transportador: " + e.getMessage());
         }
     }

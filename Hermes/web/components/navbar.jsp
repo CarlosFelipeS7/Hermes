@@ -10,6 +10,7 @@
 <nav class="navbar">
     <div class="nav-container">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navbar.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
               <a href="<%= base %>/index.jsp" class="nav-logo">
     <img src="<%= base %>/assets/images/LogoOficial.png" alt="Logo Hermes" class="logo-img">
     <span>HERMES</span>
@@ -32,9 +33,9 @@
             <% } else { %>
                 <!-- 🔹 Navbar para usuários logados -->
                 <% if ("cliente".equals(tipoUsuario)) { %>
-                    <a href="${pageContext.request.contextPath}/dashboardCliente">Painel do Cliente</a>
+                    <a href="${pageContext.request.contextPath}/dashboard/clientes/clientes.jsp" class="btn-nav">Painel do Cliente</a>
                 <% } else if ("transportador".equals(tipoUsuario)) { %>
-                    <a href="${pageContext.request.contextPath}/dashboardTransportador">Painel do Transportador</a>
+                    <a href="${pageContext.request.contextPath}/dashboardTransportador" class="btn-nav">Painel do Transportador</a>
                 <% } %>
 
                 <div class="user-menu">

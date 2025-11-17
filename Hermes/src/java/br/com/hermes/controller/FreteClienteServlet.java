@@ -9,10 +9,8 @@ import javax.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "FreteClienteDashboardServlet", urlPatterns = {"/dashboardCliente"})
+@WebServlet(name = "FreteClienteServlet", urlPatterns = {"/dashboardCliente"})
 public class FreteClienteServlet extends HttpServlet {
-
-    private final FreteDAO dao = new FreteDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -21,8 +19,8 @@ public class FreteClienteServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
 
         if (session == null ||
-            session.getAttribute("usuarioId") == null ||
-            !"cliente".equalsIgnoreCase((String) session.getAttribute("usuarioTipo"))) {
+           session.getAttribute("usuarioId") == null ||
+           !"cliente".equalsIgnoreCase((String) session.getAttribute("usuarioTipo"))) {
 
             response.sendRedirect(request.getContextPath() + "/auth/login/login.jsp");
             return;
@@ -31,22 +29,21 @@ public class FreteClienteServlet extends HttpServlet {
         try {
             int idCliente = (Integer) session.getAttribute("usuarioId");
 
-            // PEGAR SOMENTE 3 FRETES RECENTES DO CLIENTE
+            FreteDAO dao = new FreteDAO();
+
+            // Últimos 3 fretes do cliente
             List<Frete> recentes = dao.listarFretesCliente(idCliente, 3);
 
-            // ENVIAR PARA O JSP
             request.setAttribute("fretesRecentes", recentes);
 
-            // ENVIAR PARA O PAINEL
             request.getRequestDispatcher("/dashboard/cliente/cliente.jsp")
                    .forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("mensagem", "Erro ao carregar painel: " + e.getMessage());
+            request.setAttribute("mensagem", "Erro ao carregar dashboard do cliente: " + e.getMessage());
             request.setAttribute("tipoMensagem", "error");
-            request.getRequestDispatcher("/erro.jsp")
-                   .forward(request, response);
+            request.getRequestDispatcher("/erro.jsp").forward(request, response);
         }
     }
 }

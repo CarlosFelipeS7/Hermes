@@ -141,6 +141,7 @@ public class FreteDAO {
 
         return lista;
     }
+    
 
 
     // ==========================================================
@@ -198,6 +199,33 @@ public class FreteDAO {
             stmt.setInt(1, idFrete);
             stmt.executeUpdate();
         }
+    }
+
+    // ==========================================================
+    // LISTAR ÚLTIMOS 3 FRETES ACEITOS PELO TRANSPORTADOR
+    // ==========================================================
+    public List<Frete> listarFretesTransportador(int idTransportador) throws Exception {
+        String sql = """
+            SELECT * FROM frete
+            WHERE id_transportador = ?
+            ORDER BY data_solicitacao DESC
+            LIMIT 3
+        """;
+
+        List<Frete> lista = new ArrayList<>();
+
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, idTransportador);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                lista.add(map(rs));
+            }
+        }
+
+        return lista;
     }
 
 

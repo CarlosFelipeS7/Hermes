@@ -66,18 +66,6 @@ public class FreteService {
 
 
     // ==========================================================
-    // CONCLUIR FRETE (status → CONCLUIDO)
-    // ==========================================================
-    public void concluirFrete(int idFrete) throws Exception {
-
-        if (idFrete <= 0)
-            throw new Exception("ID do frete inválido.");
-
-        freteDAO.concluirFrete(idFrete);
-    }
-
-
-    // ==========================================================
     // LISTAR FRETES DO CLIENTE (limit customizado)
     // ==========================================================
     public List<Frete> listarFretesCliente(int idCliente, int limit) throws Exception {
@@ -88,55 +76,59 @@ public class FreteService {
         return freteDAO.listarFretesCliente(idCliente, limit);
     }
 
-
-    // ==========================================================
-    // LISTAR ÚLTIMOS 3 FRETES RECENTES DO CLIENTE
-    // ==========================================================
-    public List<Frete> listarFretesRecentesCliente(int idCliente) throws Exception {
-
-        if (idCliente <= 0)
-            throw new Exception("ID do cliente inválido.");
-
-        return freteDAO.listarFretesRecentesCliente(idCliente);
-    }
-
-
-    // ==========================================================
-    // LISTAR FRETES DISPONÍVEIS PARA TRANSPORTADOR
+// ==========================================================
+    // LISTAR FRETES DISPONÍVEIS (pendentes)
     // ==========================================================
     public List<Frete> listarFretesDisponiveis() throws Exception {
         return freteDAO.listarPendentesTodos();
     }
 
-
     // ==========================================================
     // LISTAR FRETES EM ANDAMENTO DO TRANSPORTADOR
     // ==========================================================
     public List<Frete> listarFretesEmAndamento(int idTransportador) throws Exception {
-
         if (idTransportador <= 0)
             throw new Exception("ID do transportador inválido.");
 
         return freteDAO.listarFretesEmAndamento(idTransportador);
     }
 
-
     // ==========================================================
     // LISTAR FRETES CONCLUÍDOS DO TRANSPORTADOR
     // ==========================================================
     public List<Frete> listarFretesConcluidos(int idTransportador) throws Exception {
-
         if (idTransportador <= 0)
             throw new Exception("ID do transportador inválido.");
 
         return freteDAO.listarFretesConcluidos(idTransportador);
     }
 
+    // ==========================================================
+    // LISTAR ÚLTIMOS 3 FRETES ACEITOS PELO TRANSPORTADOR
+    // ==========================================================
+    public List<Frete> listarFretesRecentesTransportador(int idTransportador) throws Exception {
+        if (idTransportador <= 0)
+            throw new Exception("ID do transportador inválido.");
+
+        return freteDAO.listarFretesTransportador(idTransportador);
+    }
+
 
     // ==========================================================
-    // Função auxiliar
+    // CONCLUIR FRETE
     // ==========================================================
+    public void concluirFrete(int idFrete) throws Exception {
+        if (idFrete <= 0)
+            throw new Exception("ID do frete inválido.");
+
+        freteDAO.concluirFrete(idFrete);
+    }
+
     private boolean isVazio(String valor) {
         return valor == null || valor.trim().isEmpty();
     }
+    
+    public List<Frete> listarTodos() throws Exception {
+    return freteDAO.listarPendentesTodos();
+}
 }

@@ -40,9 +40,11 @@
             <a href="${pageContext.request.contextPath}/fretes/solicitarFretes.jsp" class="btn btn-primary">
                 <i class="fas fa-plus-circle"></i> Solicitar Novo Frete
             </a>
-            <a href="${pageContext.request.contextPath}/FreteServlet" class="btn btn-secondary">
-                <i class="fas fa-list"></i> Ver Todos
-            </a>
+            <a href="${pageContext.request.contextPath}/FreteServlet?action=listar"
+            class="btn btn-secondary">
+            <i class="fas fa-list"></i> Ver Todos
+        </a>
+
         </div>
 
         <h2 class="fretes-title">Últimos Fretes</h2>
