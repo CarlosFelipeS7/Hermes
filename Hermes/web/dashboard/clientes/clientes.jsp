@@ -18,10 +18,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Painel do Cliente | Hermes</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/dashboard.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/footer.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/fretes.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navbar.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/dashboard.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 

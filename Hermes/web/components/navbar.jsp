@@ -1,28 +1,31 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%
     String base = request.getContextPath();
-
-    // Verifica se há usuário logado
     String nomeUsuario = (String) session.getAttribute("usuarioNome");
     String tipoUsuario = (String) session.getAttribute("usuarioTipo");
 %>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navbar.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/footer.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
 <nav class="navbar">
     <div class="nav-container">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navbar.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
-              <a href="<%= base %>/index.jsp" class="nav-logo">
-    <img src="<%= base %>/assets/images/LogoOficial.png" alt="Logo Hermes" class="logo-img">
-    <span>HERMES</span>
-</a>
-
-
-                    <link/>
-
+        <a href="<%= base %>/index.jsp" class="nav-logo">
+            <img src="<%= base %>/assets/images/LogoOficial.png" alt="Logo Hermes" class="logo-img">
+            <span>HERMES</span>
+        </a>
 
         <div class="nav-menu">
             <% if (nomeUsuario == null) { %>
-                <!-- 🔹 Navbar para visitantes -->
                 <a href="<%= base %>/index.jsp#features" class="nav-link">Como Funciona</a>
                 <a href="<%= base %>/index.jsp#benefits" class="nav-link">Vantagens</a>
                 <a href="<%= base %>/index.jsp#pricing" class="nav-link">Planos</a>
@@ -30,12 +33,13 @@
                     <i class="fa-solid fa-user"></i> Entrar
                 </a>
                 <a href="<%= base %>/auth/cadastro/cadastro.jsp" class="nav-link btn-nav">Cadastrar</a>
+
             <% } else { %>
-                <!-- 🔹 Navbar para usuários logados -->
+
                 <% if ("cliente".equals(tipoUsuario)) { %>
-                    <a href="${pageContext.request.contextPath}/dashboard/clientes/clientes.jsp" class="btn-nav">Painel do Cliente</a>
+                    <a href="<%= base %>/dashboard/clientes/clientes.jsp" class="nav-link">Painel do Cliente</a>
                 <% } else if ("transportador".equals(tipoUsuario)) { %>
-                    <a href="${pageContext.request.contextPath}/dashboardTransportador" class="btn-nav">Painel do Transportador</a>
+                    <a href="<%= base %>/dashboardTransportador" class="nav-link">Painel do Transportador</a>
                 <% } %>
 
                 <div class="user-menu">
@@ -48,13 +52,6 @@
                     </a>
                 </div>
             <% } %>
-        </div>
-
-        <!-- Menu Mobile -->
-        <div class="hamburger">
-            <span></span>
-            <span></span>
-            <span></span>
         </div>
     </div>
 </nav>
