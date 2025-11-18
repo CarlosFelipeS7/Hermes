@@ -36,10 +36,17 @@
             </div>
 
             <div class="rast-linha">
-                <div class="rast-etapa <%= f.getStatus().equals("pendente") ? "ativo" : "" %>">Pendente</div>
-                <div class="rast-etapa <%= f.getStatus().equals("aceito") ? "ativo" : "" %>">Aceito</div>
-                <div class="rast-etapa <%= f.getStatus().equals("em_andamento") ? "ativo" : "" %>">Em andamento</div>
-                <div class="rast-etapa <%= f.getStatus().equals("concluido") ? "ativo" : "" %>">Concluído</div>
+
+                <div class="rast-etapa <%= f.getStatus().equals("PENDENTE") ? "ativo" : "" %>">Pendente</div>
+
+                <div class="rast-etapa <%= f.getStatus().equals("ACEITO") ? "ativo" : "" %>">Aceito</div>
+
+                <div class="rast-etapa <%= f.getStatus().equals("EM COLETA") ? "ativo" : "" %>">Em Coleta</div>
+
+                <div class="rast-etapa <%= f.getStatus().equals("A CAMINHO") ? "ativo" : "" %>">A Caminho</div>
+
+                <div class="rast-etapa <%= f.getStatus().equals("ENTREGUE") ? "ativo" : "" %>">Entregue</div>
+
             </div>
 
         </div>

@@ -1,70 +1,56 @@
 package br.com.hermes.model;
 
-public class Usuario {
+import java.sql.Timestamp;
 
+public class Usuario {
     private int id;
     private String nome;
     private String email;
     private String senha;
+    private String tipoUsuario;
     private String telefone;
-    private String tipo; // cliente, transportador, admin
+    private String estado;
+    private String cidade;
+    private String endereco;
+    private String documento;
+    private String veiculo;
+    private Timestamp dataCadastro;
 
-    // Construtores
-    public Usuario() {}
+    // Getters e setters ↓ TODOS completos
 
-    public Usuario(int id, String nome, String email, String tipo) {
-        this.id = id;
-        this.nome = nome;
-        this.email = email;
-        this.tipo = tipo;
-    }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    // Getters e Setters
-    public int getId() {
-        return id;
-    }
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public String getNome() {
-        return nome;
-    }
+    public String getSenha() { return senha; }
+    public void setSenha(String senha) { this.senha = senha; }
 
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
+    public String getTipoUsuario() { return tipoUsuario; }
+    public void setTipoUsuario(String tipoUsuario) { this.tipoUsuario = tipoUsuario; }
 
-    public String getEmail() {
-        return email;
-    }
+    public String getTelefone() { return telefone; }
+    public void setTelefone(String telefone) { this.telefone = telefone; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
 
-    public String getSenha() {
-        return senha;
-    }
+    public String getCidade() { return cidade; }
+    public void setCidade(String cidade) { this.cidade = cidade; }
 
-    public void setSenha(String senha) {
-        this.senha = senha;
-    }
+    public String getEndereco() { return endereco; }
+    public void setEndereco(String endereco) { this.endereco = endereco; }
 
-    public String getTelefone() {
-        return telefone;
-    }
+    public String getDocumento() { return documento; }
+    public void setDocumento(String documento) { this.documento = documento; }
 
-    public void setTelefone(String telefone) {
-        this.telefone = telefone;
-    }
+    public String getVeiculo() { return veiculo; }
+    public void setVeiculo(String veiculo) { this.veiculo = veiculo; }
 
-    public String getTipoUsuario() {
-        return tipo;
-    }
-
-    public void setTipoUsuario(String tipo) {
-        this.tipo = tipo;
-    }
+    public Timestamp getDataCadastro() { return dataCadastro; }
+    public void setDataCadastro(Timestamp dataCadastro) { this.dataCadastro = dataCadastro; }
 }

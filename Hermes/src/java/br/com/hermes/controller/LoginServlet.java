@@ -54,12 +54,12 @@ public class LoginServlet extends HttpServlet {
         switch (tipo) {
             case "cliente":
                 response.sendRedirect(request.getContextPath() +
-                        "/dashboard/clientes/clientes.jsp");
+                        "/index.jsp");
                 break;
 
             case "transportador":
                 response.sendRedirect(request.getContextPath() +
-                        "/dashboard/transportador/transportador.jsp");
+                        "/index.jsp");
                 break;
 
             case "admin":
