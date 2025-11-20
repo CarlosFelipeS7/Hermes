@@ -42,6 +42,7 @@
 
         <form action="${pageContext.request.contextPath}/FreteServlet" method="post" class="frete-form">
             <input type="hidden" name="action" value="criar">
+            <input type="hidden" name="idCliente" value="<%= idUsuario %>">
 
             <!-- SEÇÃO ORIGEM -->
             <div class="form-section">
@@ -88,33 +89,18 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Rua/Avenida *</label>
-                        <input type="text" name="enderecoOrigem" placeholder="Nome da rua ou avenida" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Número *</label>
-                        <input type="text" name="numeroOrigem" placeholder="Nº" required>
+                        <label>Endereço Completo de Origem *</label>
+                        <input type="text" name="origem" placeholder="Ex: Rua das Flores, 123 - Centro - São Paulo/SP" required>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Bairro *</label>
-                        <input type="text" name="bairroOrigem" placeholder="Bairro" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Complemento</label>
-                        <input type="text" name="complementoOrigem" placeholder="Apto, bloco, etc.">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Cidade *</label>
+                        <label>Cidade de Origem *</label>
                         <input type="text" name="cidadeOrigem" placeholder="Cidade" required>
                     </div>
                     <div class="form-group">
-                        <label>Estado *</label>
+                        <label>Estado de Origem *</label>
                         <input type="text" name="estadoOrigem" placeholder="UF" maxlength="2" required>
                     </div>
                 </div>
@@ -137,33 +123,18 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Rua/Avenida *</label>
-                        <input type="text" name="enderecoDestino" placeholder="Nome da rua ou avenida" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Número *</label>
-                        <input type="text" name="numeroDestino" placeholder="Nº" required>
+                        <label>Endereço Completo de Destino *</label>
+                        <input type="text" name="destino" placeholder="Ex: Av. Paulista, 1000 - Bela Vista - São Paulo/SP" required>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Bairro *</label>
-                        <input type="text" name="bairroDestino" placeholder="Bairro" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Complemento</label>
-                        <input type="text" name="complementoDestino" placeholder="Apto, bloco, etc.">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Cidade *</label>
+                        <label>Cidade de Destino *</label>
                         <input type="text" name="cidadeDestino" placeholder="Cidade" required>
                     </div>
                     <div class="form-group">
-                        <label>Estado *</label>
+                        <label>Estado de Destino *</label>
                         <input type="text" name="estadoDestino" placeholder="UF" maxlength="2" required>
                     </div>
                 </div>
@@ -189,7 +160,7 @@
 
                 <div class="form-group full">
                     <label>Descrição da Carga *</label>
-                    <textarea name="descricao" rows="4" placeholder="Descreva o tipo de carga, dimensões, cuidados especiais, etc." required></textarea>
+                    <textarea name="descricaoCarga" rows="4" placeholder="Descreva o tipo de carga, dimensões, cuidados especiais, etc." required></textarea>
                     <small class="field-info">Informações detalhadas ajudam os transportadores</small>
                 </div>
             </div>
@@ -202,6 +173,7 @@
                         <li>O CEP é <strong>opcional</strong> - use apenas se souber</li>
                         <li>Se informar o CEP, os campos de endereço serão preenchidos automaticamente</li>
                         <li>O DDD é usado para mostrar seu frete apenas para transportadores da mesma região</li>
+                        <li>O endereço completo será usado para cálculo de rota</li>
                     </ul>
                 </div>
             </div>
@@ -283,18 +255,15 @@ async function buscarEnderecoPorCEP(cep, tipo) {
             
             if (!data.erro) {
                 // Preencher campos automaticamente
-                document.querySelector('input[name="endereco' + tipo + '"]').value = data.logradouro || '';
-                document.querySelector('input[name="bairro' + tipo + '"]').value = data.bairro || '';
-                document.querySelector('input[name="cidade' + tipo + '"]').value = data.localidade || '';
-                document.querySelector('input[name="estado' + tipo + '"]').value = data.uf || '';
+                document.querySelector('input[name="origem"]').value = 
+                    (data.logradouro || '') + ' - ' + (data.bairro || '') + ' - ' + data.localidade + '/' + data.uf;
+                document.querySelector('input[name="cidadeOrigem"]').value = data.localidade || '';
+                document.querySelector('input[name="estadoOrigem"]').value = data.uf || '';
                 
                 // Auto-selecionar DDD baseado no estado E cidade (apenas para origem)
                 if (tipo === 'Origem') {
                     selecionarDDDPorEstado(data.uf, data.localidade);
                 }
-                
-                // Focar no próximo campo (número)
-                document.querySelector('input[name="numero' + tipo + '"]').focus();
                 
                 showMessage('Endereço ' + tipo.toLowerCase() + ' preenchido automaticamente!', 'success');
             } else {
@@ -311,11 +280,41 @@ async function buscarEnderecoPorCEP(cep, tipo) {
     }
 }
 
-// Selecionar DDD baseado no estado E cidade (NOVA VERSÃO)
+// Buscar endereço de destino por CEP
+async function buscarEnderecoDestinoPorCEP(cep, tipo) {
+    if (cep.length === 9) {
+        const cepLimpo = cep.replace('-', '');
+        
+        try {
+            const loadingElement = document.getElementById('loading' + tipo);
+            if (loadingElement) loadingElement.style.display = 'inline';
+            
+            const response = await fetch('https://viacep.com.br/ws/' + cepLimpo + '/json/');
+            const data = await response.json();
+            
+            if (!data.erro) {
+                document.querySelector('input[name="destino"]').value = 
+                    (data.logradouro || '') + ' - ' + (data.bairro || '') + ' - ' + data.localidade + '/' + data.uf;
+                document.querySelector('input[name="cidadeDestino"]').value = data.localidade || '';
+                document.querySelector('input[name="estadoDestino"]').value = data.uf || '';
+                
+                showMessage('Endereço destino preenchido automaticamente!', 'success');
+            } else {
+                showMessage('CEP não encontrado. Preencha os campos manualmente.', 'warning');
+            }
+        } catch (error) {
+            console.error('Erro ao buscar CEP:', error);
+            showMessage('Erro ao buscar CEP. Preencha os campos manualmente.', 'error');
+        } finally {
+            const loadingElement = document.getElementById('loading' + tipo);
+            if (loadingElement) loadingElement.style.display = 'none';
+        }
+    }
+}
+
+// Selecionar DDD baseado no estado E cidade
 function selecionarDDDPorEstado(uf, cidade) {
-    // Mapeamento completo de DDDs por região
     const mapeamentoDDD = {
-        // São Paulo - DDDs diversos
         '11': ['São Paulo', 'Guarulhos', 'Osasco', 'Santo André', 'São Bernardo do Campo', 'Mauá', 'Diadema'],
         '12': ['São José dos Campos', 'Taubaté', 'Jacareí', 'Caçapava', 'Campos do Jordão'],
         '13': ['Santos', 'São Vicente', 'Praia Grande', 'Guarujá', 'Cubatão'],
@@ -325,8 +324,6 @@ function selecionarDDDPorEstado(uf, cidade) {
         '17': ['São José do Rio Preto', 'Votuporanga', 'Catanduva', 'Jales', 'Fernandópolis', 'Auriflama', 'Santa Fé do Sul'],
         '18': ['Presidente Prudente', 'Araçatuba', 'Assis', 'Adamantina', 'Dracena'],
         '19': ['Campinas', 'Piracicaba', 'Limeira', 'Americana', 'Sumaré', 'Hortolândia'],
-        
-        // Outros estados (mantido o mapeamento por estado)
         '21': ['RJ'], '22': ['RJ'], '24': ['RJ'], 
         '27': ['ES'], '28': ['ES'],
         '31': ['MG'], '32': ['MG'], '33': ['MG'], '34': ['MG'], '35': ['MG'], '37': ['MG'], '38': ['MG'],
@@ -343,7 +340,7 @@ function selecionarDDDPorEstado(uf, cidade) {
         '96': ['AP'], '97': ['AM'], '98': ['MA'], '99': ['MA']
     };
 
-    // Primeiro tenta encontrar pela cidade (mais preciso)
+    // Primeiro tenta encontrar pela cidade
     for (const [ddd, cidades] of Object.entries(mapeamentoDDD)) {
         for (const nomeCidade of cidades) {
             if (cidade.toLowerCase().includes(nomeCidade.toLowerCase())) {
@@ -357,7 +354,7 @@ function selecionarDDDPorEstado(uf, cidade) {
     // Se não encontrou pela cidade, tenta pelo estado
     for (const [ddd, cidades] of Object.entries(mapeamentoDDD)) {
         for (const nomeCidade of cidades) {
-            if (nomeCidade === uf) { // Quando o valor é só a UF
+            if (nomeCidade === uf) {
                 document.querySelector('select[name="dddOrigem"]').value = ddd;
                 console.log('DDD encontrado por estado:', ddd, 'para', uf);
                 return;
@@ -368,12 +365,11 @@ function selecionarDDDPorEstado(uf, cidade) {
     console.log('DDD não encontrado para:', cidade, uf);
 }
 
-// Mostrar mensagens (CORRIGIDO - sem template literals)
+// Mostrar mensagens
 function showMessage(message, type) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'alert-message ' + type;
     
-    // Criar o ícone baseado no tipo (SEM template literals)
     let iconClass = 'fa-exclamation-circle';
     if (type === 'success') {
         iconClass = 'fa-check-circle';
@@ -399,7 +395,7 @@ document.getElementById('cepOrigem').addEventListener('input', function(e) {
 document.getElementById('cepDestino').addEventListener('input', function(e) {
     mascaraCEP(this);
     if (this.value.length === 9) {
-        buscarEnderecoPorCEP(this.value, 'Destino');
+        buscarEnderecoDestinoPorCEP(this.value, 'Destino');
     }
 });
 

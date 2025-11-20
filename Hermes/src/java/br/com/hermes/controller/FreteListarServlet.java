@@ -59,6 +59,8 @@ public class FreteListarServlet extends HttpServlet {
             throws Exception {
 
         FreteDAO dao = new FreteDAO();
+        
+        
         List<Frete> fretes = dao.listarFretesCliente(idCliente, 50);
 
         request.setAttribute("fretes", fretes);
@@ -73,12 +75,25 @@ public class FreteListarServlet extends HttpServlet {
             throws Exception {
 
         FreteDAO dao = new FreteDAO();
-        List<Frete> fretes = dao.listarPendentesTodos();
-
-        request.setAttribute("fretes", fretes);
-        request.getRequestDispatcher("/fretes/listaFretesTransportador.jsp")
-               .forward(request, response);
+        // ✅ 1. Carregar todos os fretes pendentes
+    List<Frete> fretes = dao.listarPendentesTodos();
+    
+    // ✅ 2. Carregar DDDs disponíveis para o filtro
+    List<String> dddsDisponiveis = dao.listarDDDsComFretes();
+    
+    // ✅ 3. Verificar se há filtro por DDD específico
+    String dddFiltro = request.getParameter("dddFiltro");
+    if (dddFiltro != null && !dddFiltro.trim().isEmpty()) {
+        fretes = dao.listarPendentesPorDDD(dddFiltro);
     }
+
+    request.setAttribute("fretes", fretes);
+    request.setAttribute("dddsDisponiveis", dddsDisponiveis);
+    request.setAttribute("dddFiltroAtual", dddFiltro); // Para manter o filtro selecionado
+    
+    request.getRequestDispatcher("/fretes/listaFretesTransportador.jsp")
+           .forward(request, response);
+}
 
     // ==========================================================
     // ERRO PADRONIZADO

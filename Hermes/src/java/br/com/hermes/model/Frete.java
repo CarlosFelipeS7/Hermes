@@ -16,6 +16,7 @@ public class Frete {
     private int idCliente;
     private Integer idTransportador;
     private String dddOrigem;
+    private String dddDestino;
 
     // -------------------------------------------
     // Construtores
@@ -35,6 +36,9 @@ public class Frete {
     // Getters & Setters
     // -------------------------------------------
 
+    public String getDddDestino() { return dddDestino; }
+public void setDddDestino(String dddDestino) { this.dddDestino = dddDestino; }
+    
     public String getDddOrigem() { return dddOrigem; }
 public void setDddOrigem(String dddOrigem) { this.dddOrigem = dddOrigem; }
     

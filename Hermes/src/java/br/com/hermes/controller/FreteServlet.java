@@ -100,11 +100,14 @@ public class FreteServlet extends HttpServlet {
         Frete f = new Frete();
         f.setOrigem(request.getParameter("origem"));
         f.setDestino(request.getParameter("destino"));
-        f.setDescricaoCarga(request.getParameter("descricao"));
+        f.setDescricaoCarga(request.getParameter("descricaoCarga"));
         f.setPeso(Double.parseDouble(request.getParameter("peso")));
         f.setValor(Double.parseDouble(request.getParameter("valor")));
         f.setIdCliente(idCliente);
 
+        // ✅ SALVAR O DDD TAMBÉM!
+    f.setDddOrigem(request.getParameter("dddOrigem"));
+        
         freteService.criarFrete(f);
 
         request.setAttribute("mensagem", "Frete solicitado com sucesso!");

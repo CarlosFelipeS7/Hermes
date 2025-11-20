@@ -1,12 +1,16 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="java.util.*, br.com.hermes.model.Frete" %>
+<%@ page import="java.util.List" %>
 
 <%
     List<Frete> fretes = (List<Frete>) request.getAttribute("fretes");
     if (fretes == null) fretes = java.util.Collections.emptyList();
     
-    String dddFiltrado = (String) request.getAttribute("dddFiltrado");
-    if (dddFiltrado == null) dddFiltrado = "";
+    List<String> dddsDisponiveis = (List<String>) request.getAttribute("dddsDisponiveis");
+    if (dddsDisponiveis == null) dddsDisponiveis = java.util.Collections.emptyList();
+    
+    String dddFiltroAtual = (String) request.getAttribute("dddFiltroAtual");
+    if (dddFiltroAtual == null) dddFiltroAtual = "";
 %>
 
 <!DOCTYPE html>
@@ -29,28 +33,24 @@
         <h1 class="section-title">Fretes disponíveis</h1>
         <p class="section-subtitle">Veja os fretes pendentes e aceite os que você deseja transportar.</p>
 
-        <!-- 🔽 FILTRO POR DDD -->
+        <!-- 🔽 FILTRO POR DDD DINÂMICO -->
         <div class="filtro-ddd">
             <h3><i class="fas fa-filter"></i> Filtrar por região (DDD):</h3>
             
             <div class="filtro-options">
                 <select onchange="filtrarPorDDD(this.value)" class="filtro-select">
                     <option value="">Todos os DDDs</option>
-                    <option value="11" <%= "11".equals(dddFiltrado) ? "selected" : "" %>>11 - São Paulo</option>
-                    <option value="21" <%= "21".equals(dddFiltrado) ? "selected" : "" %>>21 - Rio de Janeiro</option>
-                    <option value="31" <%= "31".equals(dddFiltrado) ? "selected" : "" %>>31 - Belo Horizonte</option>
-                    <option value="41" <%= "41".equals(dddFiltrado) ? "selected" : "" %>>41 - Curitiba</option>
-                    <option value="51" <%= "51".equals(dddFiltrado) ? "selected" : "" %>>51 - Porto Alegre</option>
-                    <option value="61" <%= "61".equals(dddFiltrado) ? "selected" : "" %>>61 - Brasília</option>
-                    <option value="71" <%= "71".equals(dddFiltrado) ? "selected" : "" %>>71 - Salvador</option>
-                    <option value="81" <%= "81".equals(dddFiltrado) ? "selected" : "" %>>81 - Recife</option>
-                    <option value="85" <%= "85".equals(dddFiltrado) ? "selected" : "" %>>85 - Fortaleza</option>
-                    <option value="91" <%= "91".equals(dddFiltrado) ? "selected" : "" %>>91 - Belém</option>
+                    <% for (String ddd : dddsDisponiveis) { %>
+                        <option value="<%= ddd %>" 
+                            <%= ddd.equals(dddFiltroAtual) ? "selected" : "" %>>
+                            DDD <%= ddd %>
+                        </option>
+                    <% } %>
                 </select>
                 
                 <div class="filtro-input-group">
-                    <input type="text" id="dddInput" placeholder="Digite o DDD (ex: 11)" 
-                           maxlength="2" value="<%= dddFiltrado %>"
+                    <input type="text" id="dddInput" placeholder="Digite o DDD (ex: 17)" 
+                           maxlength="2" value="<%= dddFiltroAtual %>"
                            onkeypress="return event.charCode >= 48 && event.charCode <= 57">
                     <button onclick="filtrarPorDDD(document.getElementById('dddInput').value)" 
                             class="btn btn-secondary">
@@ -59,9 +59,9 @@
                 </div>
             </div>
             
-            <% if (!dddFiltrado.isEmpty()) { %>
+            <% if (!dddFiltroAtual.isEmpty()) { %>
                 <div class="filtro-resultado">
-                    <span>Mostrando fretes do DDD <strong><%= dddFiltrado %></strong></span>
+                    <span>Mostrando fretes do DDD <strong><%= dddFiltroAtual %></strong></span>
                     <button onclick="limparFiltro()" class="btn-link">
                         <i class="fas fa-times"></i> Limpar filtro
                     </button>
@@ -83,7 +83,10 @@
                             <p><strong>Peso:</strong> <%= f.getPeso() %> kg</p>
                             <p><strong>Descrição:</strong> <%= f.getDescricaoCarga() %></p>
                             <p><strong>Valor:</strong> R$ <%= String.format("%.2f", f.getValor()) %></p>
-                            <p><strong>Data:</strong> <%= f.getDataSolicitacao().toLocalDateTime().toLocalDate() %></p>
+                            <p><strong>Data:</strong> <%= f.getDataSolicitacao() != null ? f.getDataSolicitacao().toLocalDateTime().toLocalDate() : "N/A" %></p>
+                            <% if (f.getDddOrigem() != null && !f.getDddOrigem().isEmpty()) { %>
+                                <p><strong>Região:</strong> DDD <%= f.getDddOrigem() %></p>
+                            <% } %>
                         </div>
 
                         <form action="${pageContext.request.contextPath}/FreteServlet" method="post" class="frete-action">
@@ -100,8 +103,8 @@
                     <i class="fas fa-box-open fa-3x"></i>
                     <h3>Nenhum frete disponível</h3>
                     <p>
-                        <% if (!dddFiltrado.isEmpty()) { %>
-                            Não encontramos fretes para o DDD <strong><%= dddFiltrado %></strong>.
+                        <% if (!dddFiltroAtual.isEmpty()) { %>
+                            Não encontramos fretes para o DDD <strong><%= dddFiltroAtual %></strong>.
                             <a href="javascript:void(0)" onclick="limparFiltro()">Ver todos os fretes</a>
                         <% } else { %>
                             Todos os fretes disponíveis já foram aceitos. Volte mais tarde!
@@ -121,18 +124,19 @@ function filtrarPorDDD(ddd) {
     if (ddd && ddd.trim() !== '') {
         // Validar se é um DDD válido (2 dígitos)
         if (/^\d{2}$/.test(ddd)) {
-            window.location.href = '${pageContext.request.contextPath}/FiltroDDDServlet?ddd=' + ddd;
+            // ✅ AGORA USA O FreteListarServlet CORRETO!
+            window.location.href = '${pageContext.request.contextPath}/FreteListarServlet?dddFiltro=' + ddd;
         } else {
             alert('Por favor, digite um DDD válido com 2 dígitos.');
         }
     } else {
         // Recarregar sem filtro
-        window.location.href = '${pageContext.request.contextPath}/FiltroDDDServlet';
+        window.location.href = '${pageContext.request.contextPath}/FreteListarServlet';
     }
 }
 
 function limparFiltro() {
-    window.location.href = '${pageContext.request.contextPath}/FiltroDDDServlet';
+    window.location.href = '${pageContext.request.contextPath}/FreteListarServlet';
 }
 
 // Enter no input de DDD
