@@ -15,9 +15,14 @@ public class Usuario {
     private String documento;
     private String veiculo;
     private Timestamp dataCadastro;
+    private String ddd;
 
     // Getters e setters ↓ TODOS completos
 
+    public String getDdd() {return ddd;}
+
+    public void setDdd(String ddd) {this.ddd = ddd;}
+    
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 

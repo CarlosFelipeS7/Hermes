@@ -46,8 +46,8 @@ public class UsuarioDAO {
     public void inserir(Usuario u) throws Exception {
         String sql = """
             INSERT INTO usuario 
-            (nome, email, senha, tipo_usuario, telefone)
-            VALUES (?, ?, ?, ?, ?)
+            (nome, email, senha, tipo_usuario, telefone, ddd)
+            VALUES (?, ?, ?, ?, ?, ?)
         """;
 
         try (Connection conn = Conexao.getConnection();
@@ -58,6 +58,7 @@ public class UsuarioDAO {
             stmt.setString(3, hashSenha(u.getSenha()));
             stmt.setString(4, u.getTipoUsuario());
             stmt.setString(5, u.getTelefone());
+            stmt.setString(6, u.getDdd());
             stmt.executeUpdate();
         }
     }
@@ -74,12 +75,7 @@ public class UsuarioDAO {
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                Usuario u = new Usuario();
-                u.setId(rs.getInt("id"));
-                u.setNome(rs.getString("nome"));
-                u.setEmail(rs.getString("email"));
-                u.setTelefone(rs.getString("telefone"));
-                u.setTipoUsuario(rs.getString("tipo_usuario"));
+                Usuario u = mapUsuario(rs);
                 usuarios.add(u);
             }
         }
@@ -101,12 +97,7 @@ public class UsuarioDAO {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    u = new Usuario();
-                    u.setId(rs.getInt("id"));
-                    u.setNome(rs.getString("nome"));
-                    u.setEmail(rs.getString("email"));
-                    u.setTelefone(rs.getString("telefone"));
-                    u.setTipoUsuario(rs.getString("tipo_usuario"));
+                    u = mapUsuario(rs);
                 }
             }
         }
@@ -119,7 +110,7 @@ public class UsuarioDAO {
     public void atualizar(Usuario u) throws Exception {
         String sql = """
             UPDATE usuario 
-            SET nome=?, email=?, telefone=?, tipo_usuario=?
+            SET nome=?, email=?, telefone=?, tipo_usuario=?, ddd=?
             WHERE id=?
         """;
 
@@ -130,7 +121,8 @@ public class UsuarioDAO {
             stmt.setString(2, u.getEmail());
             stmt.setString(3, u.getTelefone());
             stmt.setString(4, u.getTipoUsuario());
-            stmt.setInt(5, u.getId());
+            stmt.setString(5, u.getDdd());
+            stmt.setInt(6, u.getId());
             stmt.executeUpdate();
         }
     }
@@ -162,5 +154,157 @@ public class UsuarioDAO {
             stmt.setInt(1, id);
             stmt.executeUpdate();
         }
+    }
+
+    // -----------------------------------------------------
+    // LISTAR TRANSPORTADORES POR DDD
+    // -----------------------------------------------------
+    public List<Usuario> listarTransportadoresPorDDD(String ddd) throws Exception {
+        String sql = """
+            SELECT id, nome, email, telefone, ddd, veiculo, cidade, estado, tipo_usuario
+            FROM usuario 
+            WHERE tipo_usuario = 'transportador' 
+            AND ddd = ?
+            ORDER BY nome
+        """;
+
+        List<Usuario> transportadores = new ArrayList<>();
+        
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, ddd);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Usuario u = mapUsuario(rs);
+                transportadores.add(u);
+            }
+        }
+        return transportadores;
+    }
+
+    // -----------------------------------------------------
+    // LISTAR TODOS OS TRANSPORTADORES
+    // -----------------------------------------------------
+    public List<Usuario> listarTodosTransportadores() throws Exception {
+        String sql = """
+            SELECT id, nome, email, telefone, ddd, veiculo, cidade, estado, tipo_usuario
+            FROM usuario 
+            WHERE tipo_usuario = 'transportador'
+            ORDER BY nome
+        """;
+
+        List<Usuario> transportadores = new ArrayList<>();
+        
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Usuario u = mapUsuario(rs);
+                transportadores.add(u);
+            }
+        }
+        return transportadores;
+    }
+
+    // -----------------------------------------------------
+    // BUSCAR USUÁRIO POR ID
+    // -----------------------------------------------------
+    public Usuario buscarPorId(int id) throws Exception {
+        String sql = "SELECT * FROM usuario WHERE id = ?";
+        
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return mapUsuario(rs);
+            }
+        }
+        return null;
+    }
+
+    // -----------------------------------------------------
+    // MÉTODO AUXILIAR PARA MAPEAR RESULTSET → USUARIO
+    // -----------------------------------------------------
+   private Usuario mapUsuario(ResultSet rs) throws Exception {
+    Usuario u = new Usuario();
+    
+    // Colunas OBRIGATÓRIAS (que sempre existem)
+    u.setId(rs.getInt("id"));
+    u.setNome(rs.getString("nome"));
+    u.setEmail(rs.getString("email"));
+    u.setTelefone(rs.getString("telefone"));
+    u.setTipoUsuario(rs.getString("tipo_usuario"));
+    
+    // Colunas OPCIONAIS (com try-catch)
+    try { u.setDdd(rs.getString("ddd")); } catch (SQLException e) { u.setDdd(null); }
+    try { u.setVeiculo(rs.getString("veiculo")); } catch (SQLException e) { u.setVeiculo(null); }
+    try { u.setDocumento(rs.getString("documento")); } catch (SQLException e) { u.setDocumento(null); }
+    try { u.setEndereco(rs.getString("endereco")); } catch (SQLException e) { u.setEndereco(null); }
+    try { u.setCidade(rs.getString("cidade")); } catch (SQLException e) { u.setCidade(null); }
+    try { u.setEstado(rs.getString("estado")); } catch (SQLException e) { u.setEstado(null); }
+    
+    // Data de cadastro (com fallback)
+    try {
+        u.setDataCadastro(rs.getTimestamp("data_cadastro"));
+    } catch (SQLException e) {
+        u.setDataCadastro(new Timestamp(System.currentTimeMillis()));
+    }
+    
+    return u;
+}
+
+    // -----------------------------------------------------
+    // VERIFICAR SE DDD EXISTE PARA TRANSPORTADORES
+    // -----------------------------------------------------
+    public boolean existeTransportadorComDDD(String ddd) throws Exception {
+        String sql = """
+            SELECT COUNT(*) as total 
+            FROM usuario 
+            WHERE tipo_usuario = 'transportador' AND ddd = ?
+        """;
+
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, ddd);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("total") > 0;
+            }
+        }
+        return false;
+    }
+
+    // -----------------------------------------------------
+    // LISTAR DDDS DISPONÍVEIS PARA TRANSPORTADORES
+    // -----------------------------------------------------
+    public List<String> listarDDDsDisponiveis() throws Exception {
+        String sql = """
+            SELECT DISTINCT ddd 
+            FROM usuario 
+            WHERE tipo_usuario = 'transportador' 
+            AND ddd IS NOT NULL 
+            AND ddd != ''
+            ORDER BY ddd
+        """;
+
+        List<String> ddds = new ArrayList<>();
+        
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                ddds.add(rs.getString("ddd"));
+            }
+        }
+        return ddds;
     }
 }

@@ -15,6 +15,7 @@ public class Frete {
     private Timestamp dataConclusao;
     private int idCliente;
     private Integer idTransportador;
+    private String dddOrigem;
 
     // -------------------------------------------
     // Construtores
@@ -34,6 +35,9 @@ public class Frete {
     // Getters & Setters
     // -------------------------------------------
 
+    public String getDddOrigem() { return dddOrigem; }
+public void setDddOrigem(String dddOrigem) { this.dddOrigem = dddOrigem; }
+    
     public int getId() {
         return id;
     }

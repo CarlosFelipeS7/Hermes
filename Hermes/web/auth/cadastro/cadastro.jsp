@@ -188,6 +188,6 @@
             </div>
         </div>
     </div>
-    <script src="${pageContext.request.contextPath}/assets/js/cadastro.js"></script>
+    <script src="${pageContAext.request.contextPath}/assets/js/cadastro.js"></script>
 </body>
 </html>

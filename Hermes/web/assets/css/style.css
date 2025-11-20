@@ -844,3 +844,284 @@
             display: none;
         }
     }
+
+    /* ========== FILTRO DDD - PALETA VERDE ========== */
+.filtro-ddd {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    color: white;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.filtro-ddd h3 {
+    margin-bottom: 1rem;
+    color: white;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+}
+
+.filtro-options {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filtro-select {
+    padding: 0.75rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    font-size: 1rem;
+    min-width: 200px;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    transition: var(--transition);
+    font-weight: 500;
+}
+
+.filtro-select:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.filtro-select option {
+    background: white;
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.filtro-input-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.filtro-input-group input {
+    padding: 0.75rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    width: 120px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.filtro-input-group input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.filtro-input-group input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 400;
+}
+
+.filtro-resultado {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 0.9rem;
+    transition: var(--transition);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.btn-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+    text-decoration: none;
+}
+
+/* Botão do filtro ajustado para a paleta */
+.filtro-input-group .btn-secondary {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 0.75rem 1rem;
+    transition: var(--transition);
+}
+
+.filtro-input-group .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+/* Estados vazios */
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--gray);
+}
+
+.empty-state i {
+    margin-bottom: 1rem;
+    color: #ddd;
+    opacity: 0.7;
+}
+
+/* Header do card de frete */
+.frete-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.frete-status.pendente {
+    background: var(--warning);
+    color: #000;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.frete-info {
+    margin-bottom: 1rem;
+}
+
+.frete-action {
+    margin-top: auto;
+}
+
+/* Responsividade do filtro */
+@media (max-width: 768px) {
+    .filtro-ddd {
+        padding: 1rem;
+    }
+    
+    .filtro-options {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .filtro-select {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .filtro-input-group {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .filtro-input-group input {
+        flex: 1;
+    }
+    
+    .filtro-resultado {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .filtro-ddd {
+        padding: 0.75rem;
+    }
+    
+    .filtro-ddd h3 {
+        font-size: 1rem;
+        text-align: center;
+        justify-content: center;
+    }
+}
+
+
+
+/* Estilo para o select de DDD */
+.form-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: white;
+    color: var(--primary);
+    transition: var(--transition);
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(4, 85, 58, 0.1);
+}
+
+.form-select option {
+    padding: 0.5rem;
+    font-weight: 500;
+}
+
+.field-info {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--gray);
+    margin-top: 0.25rem;
+    font-style: italic;
+}
+
+.form-info {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1.5rem 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    color: var(--primary);
+}
+
+.form-info i {
+    color: var(--accent);
+    margin-top: 0.1rem;
+}
+
+.form-info span {
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* Placeholders mais visíveis */
+input::placeholder,
+textarea::placeholder {
+    color: #9ca3af;
+    font-weight: 400;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .form-select {
+        font-size: 16px; /* Evita zoom no iOS */
+    }
+}
+

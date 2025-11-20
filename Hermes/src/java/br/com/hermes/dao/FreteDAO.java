@@ -21,6 +21,13 @@ public class FreteDAO {
         f.setStatus(rs.getString("status"));
         f.setDataSolicitacao(rs.getTimestamp("data_solicitacao"));
         f.setDataConclusao(rs.getTimestamp("data_conclusao"));
+        
+        // NOVO CAMPO: DDD de origem
+        try {
+            f.setDddOrigem(rs.getString("ddd_origem"));
+        } catch (SQLException e) {
+            f.setDddOrigem(null); // Caso a coluna não exista ainda
+        }
 
         int idCliente = rs.getInt("id_cliente");
         if (!rs.wasNull())
@@ -33,16 +40,15 @@ public class FreteDAO {
         return f;
     }
 
-
     // ==========================================================
-    // INSERIR FRETE (CLIENTE)
+    // INSERIR FRETE (CLIENTE) - COM DDD
     // ==========================================================
     public void inserir(Frete f) throws Exception {
         String sql = """
             INSERT INTO frete 
             (origem, destino, descricao_carga, peso, valor, status, 
-             data_solicitacao, id_cliente)
-            VALUES (?, ?, ?, ?, ?, 'pendente', CURRENT_TIMESTAMP, ?)
+             data_solicitacao, id_cliente, ddd_origem)
+            VALUES (?, ?, ?, ?, ?, 'pendente', CURRENT_TIMESTAMP, ?, ?)
         """;
 
         try (Connection conn = Conexao.getConnection();
@@ -54,10 +60,81 @@ public class FreteDAO {
             stmt.setDouble(4, f.getPeso());
             stmt.setDouble(5, f.getValor());
             stmt.setInt(6, f.getIdCliente());
+            stmt.setString(7, f.getDddOrigem());
             stmt.executeUpdate();
         }
     }
 
+    // ==========================================================
+    // LISTAR FRETES PENDENTES POR DDD (para transportador)
+    // ==========================================================
+    public List<Frete> listarPendentesPorDDD(String ddd) throws Exception {
+        String sql = """
+            SELECT * FROM frete
+            WHERE LOWER(status) = 'pendente' AND ddd_origem = ?
+            ORDER BY data_solicitacao DESC
+        """;
+
+        List<Frete> lista = new ArrayList<>();
+
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, ddd);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) lista.add(map(rs));
+        }
+
+        return lista;
+    }
+
+    // ==========================================================
+    // LISTAR FRETES PENDENTES (para transportador) - TODOS
+    // ==========================================================
+    public List<Frete> listarPendentesTodos() throws Exception {
+        String sql = """
+            SELECT * FROM frete
+            WHERE LOWER(status) = 'pendente'
+            ORDER BY data_solicitacao DESC
+        """;
+
+        List<Frete> lista = new ArrayList<>();
+
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) lista.add(map(rs));
+        }
+
+        return lista;
+    }
+
+    // ==========================================================
+    // LISTAR APENAS 3 FRETES PENDENTES
+    // ==========================================================
+    public List<Frete> listarPendentes(int limit) throws Exception {
+        String sql = """
+            SELECT * FROM frete
+            WHERE LOWER(status) = 'pendente'
+            ORDER BY data_solicitacao DESC
+            LIMIT ?
+        """;
+
+        List<Frete> lista = new ArrayList<>();
+
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, limit);
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) lista.add(map(rs));
+        }
+
+        return lista;
+    }
 
     // ==========================================================
     // LISTAR FRETES DO CLIENTE (limit configurável)
@@ -85,64 +162,12 @@ public class FreteDAO {
         return lista;
     }
 
-
     // ==========================================================
     // LISTAR ÚLTIMOS 3 FRETES DO CLIENTE
     // ==========================================================
     public List<Frete> listarFretesRecentesCliente(int idCliente) throws Exception {
         return listarFretesCliente(idCliente, 3);
     }
-
-
-    // ==========================================================
-    // LISTAR FRETES PENDENTES (para transportador)
-    // ==========================================================
-    public List<Frete> listarPendentesTodos() throws Exception {
-        String sql = """
-            SELECT * FROM frete
-            WHERE LOWER(status) = 'pendente'
-            ORDER BY data_solicitacao DESC
-        """;
-
-        List<Frete> lista = new ArrayList<>();
-
-        try (Connection conn = Conexao.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-
-            while (rs.next()) lista.add(map(rs));
-        }
-
-        return lista;
-    }
-
-
-    // ==========================================================
-    // LISTAR APENAS 3 FRETES PENDENTES
-    // ==========================================================
-    public List<Frete> listarPendentes(int limit) throws Exception {
-        String sql = """
-            SELECT * FROM frete
-            WHERE LOWER(status) = 'pendente'
-            ORDER BY data_solicitacao DESC
-            LIMIT ?
-        """;
-
-        List<Frete> lista = new ArrayList<>();
-
-        try (Connection conn = Conexao.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, limit);
-
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) lista.add(map(rs));
-        }
-
-        return lista;
-    }
-    
-
 
     // ==========================================================
     // ACEITAR FRETE (status → ACEITO)
@@ -163,7 +188,6 @@ public class FreteDAO {
         }
     }
 
-
     // ==========================================================
     // INICIAR FRETE (status → EM_ANDAMENTO)
     // ==========================================================
@@ -181,7 +205,6 @@ public class FreteDAO {
             stmt.executeUpdate();
         }
     }
-
 
     // ==========================================================
     // CONCLUIR FRETE (status → CONCLUIDO)
@@ -228,7 +251,6 @@ public class FreteDAO {
         return lista;
     }
 
-
     // ==========================================================
     // LISTAR FRETES EM ANDAMENTO DO TRANSPORTADOR
     // ==========================================================
@@ -252,7 +274,6 @@ public class FreteDAO {
 
         return lista;
     }
-
 
     // ==========================================================
     // LISTAR FRETES CONCLUÍDOS DO TRANSPORTADOR
@@ -278,7 +299,6 @@ public class FreteDAO {
         return lista;
     }
 
-
     // ==========================================================
     // BUSCAR FRETE POR ID
     // ==========================================================
@@ -295,5 +315,54 @@ public class FreteDAO {
         }
 
         return null;
+    }
+
+    // ==========================================================
+    // VERIFICAR SE EXISTEM FRETES PARA UM DDD
+    // ==========================================================
+    public boolean existeFreteComDDD(String ddd) throws Exception {
+        String sql = """
+            SELECT COUNT(*) as total 
+            FROM frete 
+            WHERE status = 'pendente' AND ddd_origem = ?
+        """;
+
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, ddd);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("total") > 0;
+            }
+        }
+        return false;
+    }
+
+    // ==========================================================
+    // LISTAR DDDS DISPONÍVEIS COM FRETES PENDENTES
+    // ==========================================================
+    public List<String> listarDDDsComFretes() throws Exception {
+        String sql = """
+            SELECT DISTINCT ddd_origem 
+            FROM frete 
+            WHERE status = 'pendente' 
+            AND ddd_origem IS NOT NULL 
+            AND ddd_origem != ''
+            ORDER BY ddd_origem
+        """;
+
+        List<String> ddds = new ArrayList<>();
+        
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                ddds.add(rs.getString("ddd_origem"));
+            }
+        }
+        return ddds;
     }
 }
