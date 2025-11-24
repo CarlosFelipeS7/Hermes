@@ -2,8 +2,10 @@ package br.com.hermes.controller;
 
 import br.com.hermes.dao.UsuarioDAO;
 import br.com.hermes.dao.FreteDAO;
+import br.com.hermes.dao.AvaliacaoDAO;
 import br.com.hermes.model.Usuario;
 import br.com.hermes.model.Frete;
+import br.com.hermes.model.Avaliacao;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -39,6 +41,22 @@ public class PerfilServlet extends HttpServlet {
                 historico = freteDAO.listarFretesTransportador(idUsuario);
             } else {
                 historico = freteDAO.listarFretesCliente(idUsuario, 99999);
+            }
+
+            // ✅ Carregar dados de avaliações
+            AvaliacaoDAO avaliacaoDAO = new AvaliacaoDAO();
+            
+            if ("transportador".equalsIgnoreCase(tipoUsuario)) {
+                // Para transportador: carregar avaliações recebidas
+                List<Avaliacao> avaliacoes = avaliacaoDAO.listarPorTransportador(idUsuario);
+                double mediaAvaliacoes = avaliacaoDAO.calcularMediaTransportador(idUsuario);
+                
+                request.setAttribute("avaliacoes", avaliacoes);
+                request.setAttribute("mediaAvaliacoes", mediaAvaliacoes);
+            } else {
+                // Para cliente: carregar avaliações feitas
+                List<Avaliacao> avaliacoesFeitas = avaliacaoDAO.listarPorCliente(idUsuario);
+                request.setAttribute("avaliacoesFeitas", avaliacoesFeitas);
             }
 
             request.setAttribute("usuario", usuario);
@@ -94,6 +112,6 @@ public class PerfilServlet extends HttpServlet {
             e.printStackTrace();
             request.setAttribute("mensagem", "Erro ao atualizar perfil: " + e.getMessage());
             request.getRequestDispatcher("/erro.jsp").forward(request, response);
-        }
+        }   
     }
 }

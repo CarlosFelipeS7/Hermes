@@ -6,6 +6,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class AvaliacaoDAO {
 
     // ---------------------------------------------------------
@@ -43,6 +44,62 @@ public class AvaliacaoDAO {
         }
     }
 
+    
+    // No AvaliacaoDAO.java - MÉTODO SIMPLIFICADO
+public List<Avaliacao> listarAvaliacoesPublicasPorDDD(String ddd) throws Exception {
+    String sql = """
+        SELECT a.* 
+        FROM avaliacao a
+        INNER JOIN frete f ON a.id_frete = f.id
+        INNER JOIN usuario u ON f.id_transportador = u.id
+        WHERE u.ddd = ? AND u.tipo_usuario = 'transportador'
+        ORDER BY a.data_avaliacao DESC
+        LIMIT 20
+    """;
+
+    List<Avaliacao> lista = new ArrayList<>();
+
+    try (Connection conn = Conexao.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setString(1, ddd);
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next()) {
+            Avaliacao a = map(rs);
+            lista.add(a);
+        }
+    }
+    return lista;
+}
+    
+    
+
+// Listar DDDs que possuem avaliações
+public List<String> listarDDDsComAvaliacoes() throws Exception {
+    String sql = """
+        SELECT DISTINCT u.ddd 
+        FROM avaliacao a
+        INNER JOIN frete f ON a.id_frete = f.id
+        INNER JOIN usuario u ON f.id_transportador = u.id
+        WHERE u.ddd IS NOT NULL AND u.ddd != ''
+        ORDER BY u.ddd
+    """;
+
+    List<String> ddds = new ArrayList<>();
+
+    try (Connection conn = Conexao.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql);
+         ResultSet rs = stmt.executeQuery()) {
+
+        while (rs.next()) {
+            ddds.add(rs.getString("ddd"));
+        }
+    }
+    return ddds;
+}
+    
+    
     // ---------------------------------------------------------
     // BUSCAR AVALIAÇÃO DE UM FRETE
     // ---------------------------------------------------------
@@ -87,6 +144,9 @@ public class AvaliacaoDAO {
         return lista;
     }
 
+    
+    
+    
     // ---------------------------------------------------------
     // LISTAR TODAS AVALIAÇÕES DE UM CLIENTE
     // ---------------------------------------------------------
@@ -159,5 +219,4 @@ public class AvaliacaoDAO {
         }
         return 0.0;
     }
-
 }
