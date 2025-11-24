@@ -19,13 +19,20 @@
 }
 
 .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    display: flex;
+    grid-template-columns: 1fr 1fr;
     gap: 2rem;
-    margin-bottom: 4rem;
+    background: #10b98133;
+    backdrop-filter: blur(10px);
+    padding: 1rem;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid #10b981;
+    color: black;
+    justify-content: space-evenly;
 }
 
 .stat-card {
+    width: 75%;
     background: white;
     padding: 2rem;
     border-radius: var(--border-radius-lg);

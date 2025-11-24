@@ -1,0 +1,99 @@
+package br.com.hermes.controller;
+
+import br.com.hermes.dao.UsuarioDAO;
+import br.com.hermes.dao.FreteDAO;
+import br.com.hermes.model.Usuario;
+import br.com.hermes.model.Frete;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.*;
+import java.io.IOException;
+import java.util.List;
+
+@WebServlet(name = "PerfilServlet", urlPatterns = {"/PerfilServlet"})
+public class PerfilServlet extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession(false);
+
+        if (session == null || session.getAttribute("usuarioId") == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login/login.jsp");
+            return;
+        }
+
+        int idUsuario = (Integer) session.getAttribute("usuarioId");
+        String tipoUsuario = (String) session.getAttribute("usuarioTipo");
+
+        try {
+            UsuarioDAO usuarioDAO = new UsuarioDAO();
+            Usuario usuario = usuarioDAO.buscarPorId(idUsuario);
+
+            FreteDAO freteDAO = new FreteDAO();
+            List<Frete> historico;
+
+            if ("transportador".equalsIgnoreCase(tipoUsuario)) {
+                historico = freteDAO.listarFretesTransportador(idUsuario);
+            } else {
+                historico = freteDAO.listarFretesCliente(idUsuario, 99999);
+            }
+
+            request.setAttribute("usuario", usuario);
+            request.setAttribute("historicoFretes", historico);
+            request.setAttribute("tipoUsuario", tipoUsuario);
+
+            // JSP único de perfil
+            request.getRequestDispatcher("/perfil/perfil.jsp").forward(request, response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("mensagem", "Erro ao carregar perfil: " + e.getMessage());
+            request.getRequestDispatcher("/erro.jsp").forward(request, response);
+        }
+    }
+
+    // Atualizar dados
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession(false);
+
+        if (session == null || session.getAttribute("usuarioId") == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login/login.jsp");
+            return;
+        }
+
+        int idUsuario = (Integer) session.getAttribute("usuarioId");
+
+        try {
+            UsuarioDAO dao = new UsuarioDAO();
+            Usuario u = dao.buscarPorId(idUsuario);
+
+            u.setNome(request.getParameter("nome"));
+            u.setEmail(request.getParameter("email"));
+            u.setTelefone(request.getParameter("telefone"));
+            u.setCidade(request.getParameter("cidade"));
+            u.setEstado(request.getParameter("estado"));
+            u.setEndereco(request.getParameter("endereco"));
+            u.setDocumento(request.getParameter("documento"));
+            u.setVeiculo(request.getParameter("veiculo"));
+            u.setDdd(request.getParameter("ddd"));
+
+            dao.atualizar(u);
+
+            // atualizar nome na sessão
+            session.setAttribute("usuarioNome", u.getNome());
+
+            response.sendRedirect(request.getContextPath() + "/PerfilServlet?ok=1");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("mensagem", "Erro ao atualizar perfil: " + e.getMessage());
+            request.getRequestDispatcher("/erro.jsp").forward(request, response);
+        }
+    }
+}

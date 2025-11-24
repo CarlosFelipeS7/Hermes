@@ -36,17 +36,17 @@
 
             <% } else { %>
 
-                <% if ("cliente".equals(tipoUsuario)) { %>
+                <% if ("cliente".equalsIgnoreCase(tipoUsuario)) { %>
                     <a href="<%= base %>/dashboard/clientes/clientes.jsp" class="nav-link">Painel do Cliente</a>
-                <% } else if ("transportador".equals(tipoUsuario)) { %>
+                <% } else if ("transportador".equalsIgnoreCase(tipoUsuario)) { %>
                     <a href="<%= base %>/dashboardTransportador" class="nav-link">Painel do Transportador</a>
                 <% } %>
 
                 <div class="user-menu">
-                    <span class="user-name">
+                    <a href="<%= base %>/PerfilServlet" class="user-name perfil-link">
                         <i class="fas fa-user-circle"></i>
                         <%= nomeUsuario %>
-                    </span>
+                    </a>
                     <a href="<%= base %>/LogoutServlet" class="nav-link btn-nav logout-btn">
                         <i class="fas fa-sign-out-alt"></i> Sair
                     </a>

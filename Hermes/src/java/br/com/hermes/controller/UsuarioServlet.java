@@ -19,11 +19,16 @@ public class UsuarioServlet extends HttpServlet {
 
         request.setCharacterEncoding("UTF-8");
 
-        String nome = request.getParameter("nome");
-        String email = request.getParameter("email");
-        String senha = request.getParameter("senha");
+        String nome        = request.getParameter("nome");
+        String email       = request.getParameter("email");
+        String senha       = request.getParameter("senha");
         String tipoUsuario = request.getParameter("tipoUsuario");
-        String telefone = request.getParameter("telefone");
+        String telefone    = request.getParameter("telefone");
+        String endereco    = request.getParameter("endereco");
+        String estado      = request.getParameter("estado");
+        String cidade      = request.getParameter("cidade");
+        String documento   = request.getParameter("documento");
+        String veiculo     = request.getParameter("veiculo");
 
         try {
             // Criar objeto usuário
@@ -33,8 +38,13 @@ public class UsuarioServlet extends HttpServlet {
             u.setSenha(senha);
             u.setTipoUsuario(tipoUsuario);
             u.setTelefone(telefone);
+            u.setEndereco(endereco);
+            u.setEstado(estado);
+            u.setCidade(cidade);
+            u.setDocumento(documento);
+            u.setVeiculo(veiculo);
 
-            // Chamando SERVICE (não mais o DAO direto)
+            // Chamando SERVICE
             usuarioService.cadastrar(u);
 
             // Mensagem pós-sucesso via sessão
@@ -42,7 +52,7 @@ public class UsuarioServlet extends HttpServlet {
             session.setAttribute("mensagemCadastro", "Cadastro realizado com sucesso!");
             session.setAttribute("tipoMensagemCadastro", "success");
 
-            // Redirect para login (evita reenviar formulário)
+            // Redirect para login
             response.sendRedirect(request.getContextPath() + "/auth/login/login.jsp");
 
         } catch (Exception e) {
@@ -61,6 +71,6 @@ public class UsuarioServlet extends HttpServlet {
         request.setAttribute("tipoMensagem", "error");
 
         request.getRequestDispatcher("/auth/cadastro/cadastro.jsp")
-                .forward(request, response);
+               .forward(request, response);
     }
 }

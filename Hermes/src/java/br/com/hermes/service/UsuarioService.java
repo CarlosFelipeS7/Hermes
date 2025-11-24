@@ -8,9 +8,6 @@ public class UsuarioService {
 
     private final UsuarioDAO usuarioDAO = new UsuarioDAO();
 
-    // ==========================================================
-    // CRIAR USUÁRIO COM VALIDAÇÕES
-    // ==========================================================
     public void cadastrar(Usuario u) throws Exception {
 
         if (u == null)
@@ -31,12 +28,35 @@ public class UsuarioService {
         if (isVazio(u.getTipoUsuario()))
             throw new Exception("Tipo de usuário inválido.");
 
+        if (isVazio(u.getTelefone()))
+            throw new Exception("Telefone é obrigatório.");
+
+        if (isVazio(u.getEndereco()))
+            throw new Exception("Endereço é obrigatório.");
+
+        if (isVazio(u.getEstado()))
+            throw new Exception("Estado é obrigatório.");
+
+        if (isVazio(u.getCidade()))
+            throw new Exception("Cidade é obrigatória.");
+
+        // Regras específicas para transportador
+        if ("transportador".equalsIgnoreCase(u.getTipoUsuario())) {
+            if (isVazio(u.getDocumento())) {
+                throw new Exception("Documento é obrigatório para transportador.");
+            }
+            if (isVazio(u.getVeiculo())) {
+                throw new Exception("Tipo de veículo é obrigatório para transportador.");
+            }
+        }
+
         // Extrair DDD do telefone automaticamente
         String ddd = extrairDDD(u.getTelefone());
         u.setDdd(ddd);
 
         usuarioDAO.inserir(u);
     }
+
 
     // ==========================================================
     // VALIDAR LOGIN

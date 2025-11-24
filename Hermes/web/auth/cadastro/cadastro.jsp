@@ -46,7 +46,7 @@
 </head>
 
 <body class="login-body">
-    <% if (request.getAttribute("mensagem") != null) { %>
+<% if (request.getAttribute("mensagem") != null) { %>
     <div class="alert-overlay">
         <div class="alert-box <%= request.getAttribute("tipoMensagem") %>">
             <i class="fas <%= "success".equals(request.getAttribute("tipoMensagem")) ? "fa-check-circle" : "fa-exclamation-triangle" %>"></i>
@@ -73,7 +73,6 @@
                 <p class="login-subtitle">Preencha os campos abaixo para se cadastrar</p>
             </div>
 
-
             <!-- Formulário de cadastro -->
             <form class="login-form" method="POST" action="${pageContext.request.contextPath}/UsuarioServlet">
                 
@@ -89,7 +88,7 @@
 
                 <!-- E-mail -->
                 <div class="form-group floating animated-input">
-                    <input type="email" id="email" name="email" class="form-input" placeholder=" " required>
+                    <input type="email" id="email" name="email" class="form-input" placeholder=" " value="<%= email %>" required>
                     <label for="email" class="form-label">
                         <i class="fas fa-envelope"></i>
                         E-mail
@@ -132,11 +131,11 @@
                         <div class="form-group floating animated-input">
                             <input type="text" id="documento" name="documento" class="form-input" placeholder=" " oninput="mascararDocumento(this)">
                             <label for="documento" class="form-label">
-                            <i class="fas fa-id-card"></i>
+                                <i class="fas fa-id-card"></i>
                                 Documento (CPF ou CNPJ)
                             </label>
-                        <div class="input-focus-line"></div>
-                    </div>
+                            <div class="input-focus-line"></div>
+                        </div>
 
                         <div class="form-group floating animated-input">
                             <input type="text" id="veiculo" name="veiculo" class="form-input" placeholder=" ">
@@ -149,22 +148,71 @@
                     </div>
                 </div>
 
-                <!-- Telefone -->
+                <!-- Telefone (agora obrigatório) -->
                 <div class="form-group floating animated-input">
-                    <input type="text" id="telefone" name="telefone" class="form-input" placeholder=" " oninput="mascararTelefone(this)">
+                    <input type="text" id="telefone" name="telefone" class="form-input" placeholder=" " required oninput="mascararTelefone(this)">
                     <label for="telefone" class="form-label">
                         <i class="fas fa-phone"></i>
-                        Telefone (opcional)
+                        Telefone
                     </label>
                     <div class="input-focus-line"></div>
                 </div>
 
-                <!-- Endereço -->
+                <!-- Estado -->
                 <div class="form-group floating animated-input">
-                    <input type="text" id="endereco" name="endereco" class="form-input" placeholder=" ">
+                    <select id="estado" name="estado" class="form-input" required>
+                        <option value="" disabled selected hidden></option>
+                        <option value="AC">AC</option>
+                        <option value="AL">AL</option>
+                        <option value="AP">AP</option>
+                        <option value="AM">AM</option>
+                        <option value="BA">BA</option>
+                        <option value="CE">CE</option>
+                        <option value="DF">DF</option>
+                        <option value="ES">ES</option>
+                        <option value="GO">GO</option>
+                        <option value="MA">MA</option>
+                        <option value="MT">MT</option>
+                        <option value="MS">MS</option>
+                        <option value="MG">MG</option>
+                        <option value="PA">PA</option>
+                        <option value="PB">PB</option>
+                        <option value="PR">PR</option>
+                        <option value="PE">PE</option>
+                        <option value="PI">PI</option>
+                        <option value="RJ">RJ</option>
+                        <option value="RN">RN</option>
+                        <option value="RS">RS</option>
+                        <option value="RO">RO</option>
+                        <option value="RR">RR</option>
+                        <option value="SC">SC</option>
+                        <option value="SP">SP</option>
+                        <option value="SE">SE</option>
+                        <option value="TO">TO</option>
+                    </select>
+                    <label for="estado" class="form-label">
+                        <i class="fas fa-flag"></i>
+                        Estado (UF)
+                    </label>
+                    <div class="input-focus-line"></div>
+                </div>
+
+                <!-- Cidade -->
+                <div class="form-group floating animated-input">
+                    <input type="text" id="cidade" name="cidade" class="form-input" placeholder=" " required>
+                    <label for="cidade" class="form-label">
+                        <i class="fas fa-city"></i>
+                        Cidade
+                    </label>
+                    <div class="input-focus-line"></div>
+                </div>
+
+                <!-- Endereço (agora obrigatório) -->
+                <div class="form-group floating animated-input">
+                    <input type="text" id="endereco" name="endereco" class="form-input" placeholder=" " required>
                     <label for="endereco" class="form-label">
                         <i class="fas fa-map-marker-alt"></i>
-                        Endereço (opcional)
+                        Endereço
                     </label>
                     <div class="input-focus-line"></div>
                 </div>
@@ -184,10 +232,11 @@
 
             <!-- Rodapé -->
             <div class="login-footer animated-input">
-                <p>Voltar para <a href="../../index.jsp">página inicial</a></p>
+                <p>Voltar para <a href="${pageContext.request.contextPath}/index.jsp">página inicial</a></p>
             </div>
         </div>
     </div>
-    <script src="${pageContAext.request.contextPath}/assets/js/cadastro.js"></script>
+
+    <script src="${pageContext.request.contextPath}/assets/js/cadastro.js"></script>
 </body>
 </html>
