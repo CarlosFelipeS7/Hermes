@@ -75,7 +75,7 @@
                             </a>
                         <% } else if ("concluido".equals(f.getStatus())) { %>
                             <a class="btn btn-primary btn-small"
-                               href="${pageContext.getRequest().getContextPath()}/fretes/avaliacaoFretes.jsp?id=<%= f.getId() %>">
+   href="${pageContext.request.contextPath}/fretes/avaliacaoFretes.jsp?id=<%= f.getId() %>">
                                 <i class="fas fa-star"></i> Avaliar
                             </a>
                         <% } else { %>

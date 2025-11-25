@@ -1126,4 +1126,41 @@
         }
     }
 
-    
+    /* Estilos para fretes em andamento */
+.frete-status.em_andamento {
+    background: #f39c12;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.btn-success {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.3s ease;
+}
+
+.btn-success:hover {
+    background: #219653;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: #7f8c8d;
+    background: white;
+    border-radius: 12px;
+    margin: 1rem 0;
+}
+
+.empty-state i {
+    margin-bottom: 1rem;
+    color: #bdc3c7;
+}

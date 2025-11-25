@@ -61,8 +61,9 @@
                                 <a class="btn btn-secondary btn-small"
                                    href="rastreamento.jsp?id=<%= f.getId() %>">Rastrear</a>
                             <% } else if ("concluido".equalsIgnoreCase(f.getStatus())) { %>
-                                <a class="btn btn-primary btn-small"
-                                   href="avaliacaoFretes.jsp?id=<%= f.getId() %>">Avaliar</a>
+                                                        <a class="btn btn-primary btn-small"
+                            href="${pageContext.request.contextPath}/fretes/avaliacaoFretes.jsp?id=<%= f.getId() %>">
+                             <i class="fas fa-star"></i> Avaliar</a>
                             <% } else { %>
                                 <span>—</span>
                             <% } %>

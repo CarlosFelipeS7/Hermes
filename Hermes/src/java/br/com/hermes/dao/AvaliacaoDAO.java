@@ -1,11 +1,9 @@
 package br.com.hermes.dao;
 
 import br.com.hermes.model.Avaliacao;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
 
 public class AvaliacaoDAO {
 
@@ -24,12 +22,12 @@ public class AvaliacaoDAO {
     }
 
     // ---------------------------------------------------------
-    // INSERIR
+    // INSERIR - CORRIGIDO: usando avaliacoes (plural)
     // ---------------------------------------------------------
     public void inserir(Avaliacao a) throws Exception {
         String sql = """
-            INSERT INTO avaliacao (id_frete, nota, comentario, foto)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO avaliacoes (id_frete, nota, comentario, foto, data_avaliacao)
+            VALUES (?, ?, ?, ?, NOW())
         """;
 
         try (Connection conn = Conexao.getConnection();
@@ -44,67 +42,67 @@ public class AvaliacaoDAO {
         }
     }
 
-    
-    // No AvaliacaoDAO.java - MÉTODO SIMPLIFICADO
-public List<Avaliacao> listarAvaliacoesPublicasPorDDD(String ddd) throws Exception {
-    String sql = """
-        SELECT a.* 
-        FROM avaliacao a
-        INNER JOIN frete f ON a.id_frete = f.id
-        INNER JOIN usuario u ON f.id_transportador = u.id
-        WHERE u.ddd = ? AND u.tipo_usuario = 'transportador'
-        ORDER BY a.data_avaliacao DESC
-        LIMIT 20
-    """;
-
-    List<Avaliacao> lista = new ArrayList<>();
-
-    try (Connection conn = Conexao.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-        stmt.setString(1, ddd);
-        ResultSet rs = stmt.executeQuery();
-
-        while (rs.next()) {
-            Avaliacao a = map(rs);
-            lista.add(a);
-        }
-    }
-    return lista;
-}
-    
-    
-
-// Listar DDDs que possuem avaliações
-public List<String> listarDDDsComAvaliacoes() throws Exception {
-    String sql = """
-        SELECT DISTINCT u.ddd 
-        FROM avaliacao a
-        INNER JOIN frete f ON a.id_frete = f.id
-        INNER JOIN usuario u ON f.id_transportador = u.id
-        WHERE u.ddd IS NOT NULL AND u.ddd != ''
-        ORDER BY u.ddd
-    """;
-
-    List<String> ddds = new ArrayList<>();
-
-    try (Connection conn = Conexao.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql);
-         ResultSet rs = stmt.executeQuery()) {
-
-        while (rs.next()) {
-            ddds.add(rs.getString("ddd"));
-        }
-    }
-    return ddds;
-}
-    
-    
     // ---------------------------------------------------------
-    // BUSCAR AVALIAÇÃO DE UM FRETE
+    // LISTAR AVALIAÇÕES PÚBLICAS POR DDD - CORRIGIDO
+    // ---------------------------------------------------------
+    public List<Avaliacao> listarAvaliacoesPublicasPorDDD(String ddd) throws Exception {
+        String sql = """
+            SELECT a.* 
+            FROM avaliacoes a
+            INNER JOIN fretes f ON a.id_frete = f.id
+            INNER JOIN usuarios u ON f.id_transportador = u.id
+            WHERE u.ddd = ? AND u.tipo_usuario = 'transportador'
+            ORDER BY a.data_avaliacao DESC
+            LIMIT 20
+        """;
+
+        List<Avaliacao> lista = new ArrayList<>();
+
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, ddd);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Avaliacao a = map(rs);
+                lista.add(a);
+            }
+        }
+        return lista;
+    }
+
+    // ---------------------------------------------------------
+    // LISTAR DDDS COM AVALIAÇÕES - CORRIGIDO
+    // ---------------------------------------------------------
+    public List<String> listarDDDsComAvaliacoes() throws Exception {
+        String sql = """
+            SELECT DISTINCT u.ddd 
+            FROM avaliacoes a
+            INNER JOIN fretes f ON a.id_frete = f.id
+            INNER JOIN usuarios u ON f.id_transportador = u.id
+            WHERE u.ddd IS NOT NULL AND u.ddd != ''
+            ORDER BY u.ddd
+        """;
+
+        List<String> ddds = new ArrayList<>();
+
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                ddds.add(rs.getString("ddd"));
+            }
+        }
+        return ddds;
+    }
+
+    // ---------------------------------------------------------
+    // BUSCAR AVALIAÇÃO DE UM FRETE - CORRIGIDO
     // ---------------------------------------------------------
     public Avaliacao buscarPorFrete(int idFrete) throws Exception {
-        String sql = "SELECT * FROM avaliacao WHERE id_frete = ?";
+        String sql = "SELECT * FROM avaliacoes WHERE id_frete = ?";
         try (Connection conn = Conexao.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -119,13 +117,12 @@ public List<String> listarDDDsComAvaliacoes() throws Exception {
     }
 
     // ---------------------------------------------------------
-    // LISTAR AVALIAÇÕES DE UM TRANSPORTADOR
-    // (precisa do JOIN com frete)
+    // LISTAR AVALIAÇÕES DE UM TRANSPORTADOR - CORRIGIDO
     // ---------------------------------------------------------
     public List<Avaliacao> listarPorTransportador(int idTransportador) throws Exception {
         String sql = """
-            SELECT a.* FROM avaliacao a
-            INNER JOIN frete f ON a.id_frete = f.id
+            SELECT a.* FROM avaliacoes a
+            INNER JOIN fretes f ON a.id_frete = f.id
             WHERE f.id_transportador = ?
             ORDER BY a.data_avaliacao DESC
         """;
@@ -144,16 +141,13 @@ public List<String> listarDDDsComAvaliacoes() throws Exception {
         return lista;
     }
 
-    
-    
-    
     // ---------------------------------------------------------
-    // LISTAR TODAS AVALIAÇÕES DE UM CLIENTE
+    // LISTAR AVALIAÇÕES DE UM CLIENTE - CORRIGIDO
     // ---------------------------------------------------------
     public List<Avaliacao> listarPorCliente(int idCliente) throws Exception {
         String sql = """
-            SELECT a.* FROM avaliacao a
-            INNER JOIN frete f ON a.id_frete = f.id
+            SELECT a.* FROM avaliacoes a
+            INNER JOIN fretes f ON a.id_frete = f.id
             WHERE f.id_cliente = ?
             ORDER BY a.data_avaliacao DESC
         """;
@@ -173,11 +167,11 @@ public List<String> listarDDDsComAvaliacoes() throws Exception {
     }
 
     // ---------------------------------------------------------
-    // LISTAR AS ÚLTIMAS AVALIAÇÕES (para dashboard futuramente)
+    // LISTAR AVALIAÇÕES RECENTES - CORRIGIDO
     // ---------------------------------------------------------
     public List<Avaliacao> listarRecentes(int limit) throws Exception {
         String sql = """
-            SELECT * FROM avaliacao
+            SELECT * FROM avaliacoes
             ORDER BY data_avaliacao DESC
             LIMIT ?
         """;
@@ -197,13 +191,13 @@ public List<String> listarDDDsComAvaliacoes() throws Exception {
     }
 
     // ---------------------------------------------------------
-    // CALCULAR MÉDIA DAS AVALIAÇÕES DE UM TRANSPORTADOR
+    // CALCULAR MÉDIA DO TRANSPORTADOR - CORRIGIDO
     // ---------------------------------------------------------
     public double calcularMediaTransportador(int idTransportador) throws Exception {
         String sql = """
             SELECT AVG(a.nota) AS media
-            FROM avaliacao a
-            INNER JOIN frete f ON f.id = a.id_frete
+            FROM avaliacoes a
+            INNER JOIN fretes f ON f.id = a.id_frete
             WHERE f.id_transportador = ?
         """;
 

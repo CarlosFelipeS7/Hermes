@@ -339,6 +339,31 @@ public class FreteDAO {
         }
         return false;
     }
+    
+    
+    // ==========================================================
+// LISTAR FRETES ACEITOS DO TRANSPORTADOR (não iniciados)
+// ==========================================================
+public List<Frete> listarFretesAceitos(int idTransportador) throws Exception {
+    String sql = """
+        SELECT * FROM frete
+        WHERE id_transportador = ? AND status = 'aceito'
+        ORDER BY data_solicitacao DESC
+    """;
+
+    List<Frete> lista = new ArrayList<>();
+
+    try (Connection conn = Conexao.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setInt(1, idTransportador);
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next()) lista.add(map(rs));
+    }
+
+    return lista;
+}
 
     // ==========================================================
     // LISTAR DDDS DISPONÍVEIS COM FRETES PENDENTES

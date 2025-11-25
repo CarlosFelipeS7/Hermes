@@ -22,18 +22,14 @@ public class AvaliacaoServlet extends HttpServlet {
 
         HttpSession session = request.getSession(false);
 
-        // ===========================
-        // 1) Validar login
-        // ===========================
+        // Validar login
         if (session == null || session.getAttribute("usuarioId") == null) {
             response.sendRedirect(request.getContextPath() + "/auth/login/login.jsp");
             return;
         }
 
         try {
-            // ===========================
-            // 2) Campos do formulário
-            // ===========================
+            // Campos do formulário
             String idFreteStr = request.getParameter("idFrete");
             String notaStr = request.getParameter("nota");
             String comentario = request.getParameter("comentario");
@@ -41,57 +37,40 @@ public class AvaliacaoServlet extends HttpServlet {
             int idFrete = Integer.parseInt(idFreteStr);
             int nota = Integer.parseInt(notaStr);
 
-            // ===========================
-            // 3) Upload da foto
-            // ===========================
+            // Upload da foto
             Part fotoPart = request.getPart("foto");
             String nomeFoto = null;
 
             if (fotoPart != null && fotoPart.getSize() > 0) {
-
                 String uploadPath = request.getServletContext().getRealPath("/uploads");
-
                 File uploadDir = new File(uploadPath);
                 if (!uploadDir.exists()) uploadDir.mkdir();
 
                 String originalName = fotoPart.getSubmittedFileName();
                 nomeFoto = System.currentTimeMillis() + "_" + originalName;
-
                 fotoPart.write(uploadPath + File.separator + nomeFoto);
             }
 
-            // ===========================
-            // 4) Criar objeeto Avaliacao
-            // ===========================
+            // Criar objeto Avaliacao
             Avaliacao av = new Avaliacao();
             av.setIdFrete(idFrete);
             av.setNota(nota);
             av.setComentario(comentario);
             av.setFoto(nomeFoto);
 
-            // ===========================
-            // 5) Salvar via SERVICE
-            // ===========================
+            // Salvar via SERVICE (que já inclui as notificações)
             avaliacaoService.avaliar(av);
 
-            // ===========================
-            // 6) Redirecionar para sucesso
-            // ===========================
-            response.sendRedirect(request.getContextPath() + "/pages/avaliacao/enviado.jsp");
+            // Redirecionar para sucesso
+            request.setAttribute("mensagem", "Avaliação enviada com sucesso! O transportador foi notificado.");
+            request.setAttribute("tipoMensagem", "success");
+            request.getRequestDispatcher("/fretes/avaliacaoSucesso.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
-            redirecionarErro(request, response, e.getMessage());
+            request.setAttribute("mensagem", "Erro ao enviar avaliação: " + e.getMessage());
+            request.setAttribute("tipoMensagem", "error");
+            request.getRequestDispatcher("/fretes/avaliacaoFretes.jsp").forward(request, response);
         }
-    }
-
-    // ===========================
-    // ERRO PADRONIZADO
-    // ===========================
-    private void redirecionarErro(HttpServletRequest request, HttpServletResponse response, String msg)
-            throws IOException {
-
-        request.getSession().setAttribute("mensagemErroAvaliacao", msg);
-        response.sendRedirect(request.getContextPath() + "/pages/avaliacao/erro.jsp");
     }
 }

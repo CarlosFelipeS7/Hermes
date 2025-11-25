@@ -43,6 +43,10 @@ public class FreteTransportadorServlet extends HttpServlet {
             // Concluídos
             List<Frete> fretesConcluidos = dao.listarFretesConcluidos(idTransportador);
 
+                        // No FreteTransportadorServlet.doGet(), adicione:
+            List<Frete> fretesAceitos = dao.listarFretesAceitos(idTransportador);
+            request.setAttribute("fretesAceitos", fretesAceitos);
+            
             request.setAttribute("fretesRecentes", recentes);
             request.setAttribute("fretesDisponiveis", fretesDisponiveis);
             request.setAttribute("fretesEmAndamento", fretesEmAndamento);

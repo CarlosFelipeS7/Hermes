@@ -2,10 +2,10 @@ package br.com.hermes.controller;
 
 import br.com.hermes.dao.UsuarioDAO;
 import br.com.hermes.dao.FreteDAO;
-import br.com.hermes.dao.AvaliacaoDAO;
 import br.com.hermes.model.Usuario;
 import br.com.hermes.model.Frete;
 import br.com.hermes.model.Avaliacao;
+import br.com.hermes.service.AvaliacaoService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -43,19 +43,19 @@ public class PerfilServlet extends HttpServlet {
                 historico = freteDAO.listarFretesCliente(idUsuario, 99999);
             }
 
-            // ✅ Carregar dados de avaliações
-            AvaliacaoDAO avaliacaoDAO = new AvaliacaoDAO();
+            // ✅ Carregar dados de avaliações usando o Service
+            AvaliacaoService avaliacaoService = new AvaliacaoService();
             
             if ("transportador".equalsIgnoreCase(tipoUsuario)) {
                 // Para transportador: carregar avaliações recebidas
-                List<Avaliacao> avaliacoes = avaliacaoDAO.listarPorTransportador(idUsuario);
-                double mediaAvaliacoes = avaliacaoDAO.calcularMediaTransportador(idUsuario);
+                List<Avaliacao> avaliacoes = avaliacaoService.listarAvaliacoesTransportador(idUsuario);
+                double mediaAvaliacoes = avaliacaoService.calcularMediaTransportador(idUsuario);
                 
                 request.setAttribute("avaliacoes", avaliacoes);
                 request.setAttribute("mediaAvaliacoes", mediaAvaliacoes);
             } else {
                 // Para cliente: carregar avaliações feitas
-                List<Avaliacao> avaliacoesFeitas = avaliacaoDAO.listarPorCliente(idUsuario);
+                List<Avaliacao> avaliacoesFeitas = avaliacaoService.listarAvaliacoesCliente(idUsuario);
                 request.setAttribute("avaliacoesFeitas", avaliacoesFeitas);
             }
 
@@ -63,7 +63,6 @@ public class PerfilServlet extends HttpServlet {
             request.setAttribute("historicoFretes", historico);
             request.setAttribute("tipoUsuario", tipoUsuario);
 
-            // JSP único de perfil
             request.getRequestDispatcher("/perfil/perfil.jsp").forward(request, response);
 
         } catch (Exception e) {
@@ -73,7 +72,6 @@ public class PerfilServlet extends HttpServlet {
         }
     }
 
-    // Atualizar dados
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

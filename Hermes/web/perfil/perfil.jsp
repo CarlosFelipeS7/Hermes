@@ -280,140 +280,147 @@
                         </div>
                     <% } %>
                 </div>
-
-                <!-- SEÇÃO: AVALIAÇÕES RECEBIDAS (TRANSPORTADOR) -->
-                <% if ("transportador".equalsIgnoreCase(tipoUsuario)) { %>
-                <div class="perfil-card perfil-avaliacoes-card">
-                    <div class="perfil-avaliacoes-header">
-                        <h3>Avaliações dos Clientes</h3>
-                        <% if (mediaAvaliacoes != null && mediaAvaliacoes > 0) { %>
-                        <div class="avaliacoes-summary">
-                            <div class="avaliacoes-rating">
-                                <span class="rating-number"><%= String.format("%.1f", mediaAvaliacoes) %></span>
-                                <div class="rating-stars-large">
-                                    <% for (int i = 1; i <= 5; i++) { %>
-                                        <i class="fas fa-star <%= i <= mediaAvaliacoes ? "active" : "" %>"></i>
-                                    <% } %>
-                                </div>
-                                <span class="rating-count"><%= avaliacoes != null ? avaliacoes.size() : 0 %> avaliações</span>
-                            </div>
-                        </div>
-                        <% } %>
-                    </div>
-
-                    <% if (avaliacoes == null || avaliacoes.isEmpty()) { %>
-                        <div class="empty-state">
-                            <i class="fa-regular fa-star"></i>
-                            <p>Nenhuma avaliação recebida ainda.</p>
-                            <small>As avaliações aparecerão aqui quando os clientes avaliarem seus serviços.</small>
-                        </div>
-                    <% } else { %>
-                        <div class="avaliacoes-list">
-                            <% for (Avaliacao av : avaliacoes) { %>
-                            <div class="avaliacao-item">
-                                <div class="avaliacao-header">
-                                    <div class="avaliacao-user">
-                                        <div class="user-avatar">
-                                            <i class="fa-solid fa-user"></i>
-                                        </div>
-                                        <div class="user-info">
-                                            <span class="user-name">Cliente</span>
-                                            <div class="avaliacao-stars">
-                                                <% for (int i = 1; i <= 5; i++) { %>
-                                                    <i class="fas fa-star <%= i <= av.getNota() ? "active" : "" %>"></i>
-                                                <% } %>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <span class="avaliacao-date">
-                                        <%= av.getDataAvaliacao() != null ? 
-                                            av.getDataAvaliacao().toLocalDateTime().toLocalDate().toString() : "" %>
-                                    </span>
-                                </div>
-
-                                <% if (av.getComentario() != null && !av.getComentario().isEmpty()) { %>
-                                <div class="avaliacao-comentario">
-                                    <p>"<%= av.getComentario() %>"</p>
-                                </div>
-                                <% } %>
-
-                                <% if (av.getFoto() != null && !av.getFoto().isEmpty()) { %>
-                                <div class="avaliacao-fotos">
-                                    <div class="foto-thumbnail">
-                                        <img src="<%= base %>/uploads/<%= av.getFoto() %>" 
-                                             alt="Foto da entrega" 
-                                             onclick="abrirFoto('<%= base %>/uploads/<%= av.getFoto() %>')">
-                                    </div>
-                                </div>
-                                <% } %>
-                            </div>
-                            <% } %>
-                        </div>
+                
+                
+<!-- SEÇÃO: AVALIAÇÕES RECEBIDAS (TRANSPORTADOR) -->
+<% if ("transportador".equalsIgnoreCase(tipoUsuario)) { %>
+<div class="perfil-card perfil-avaliacoes-card">
+    <div class="perfil-avaliacoes-header">
+        <h3>Avaliações dos Clientes</h3>
+        <% if (mediaAvaliacoes != null && mediaAvaliacoes > 0) { %>
+        <div class="avaliacoes-summary">
+            <div class="avaliacoes-rating">
+                <span class="rating-number"><%= String.format("%.1f", mediaAvaliacoes) %></span>
+                <div class="rating-stars-large">
+                    <% for (int i = 1; i <= 5; i++) { %>
+                        <i class="fas fa-star <%= i <= mediaAvaliacoes ? "active" : "" %>"></i>
                     <% } %>
                 </div>
+               <span class="rating-count">
+    <%= avaliacoes != null ? avaliacoes.size() : 0 %> avaliações
+</span>
+            </div>
+        </div>
+        <% } %>
+    </div>
+
+    <% if (avaliacoes == null || avaliacoes.isEmpty()) { %>
+        <div class="empty-state">
+            <i class="fa-regular fa-star"></i>
+            <p>Nenhuma avaliação recebida ainda.</p>
+            <small>As avaliações aparecerão aqui quando os clientes avaliarem seus serviços.</small>
+        </div>
+    <% } else { %>
+        <div class="avaliacoes-list">
+            <% for (Avaliacao av : avaliacoes) { %>
+            <div class="avaliacao-item">
+                <div class="avaliacao-header">
+                    <div class="avaliacao-user">
+                        <div class="user-avatar">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div class="user-info">
+                            <span class="user-name">Cliente #<%= av.getIdFrete() %></span>
+                            <div class="avaliacao-stars">
+                                <% for (int i = 1; i <= 5; i++) { %>
+                                    <i class="fas fa-star <%= i <= av.getNota() ? "active" : "" %>"></i>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="avaliacao-date">
+                        <%= av.getDataAvaliacao() != null ? 
+                            av.getDataAvaliacao().toLocalDateTime().toLocalDate().toString() : "" %>
+                    </span>
+                </div>
+
+                <% if (av.getComentario() != null && !av.getComentario().isEmpty()) { %>
+                <div class="avaliacao-comentario">
+                    <p>"<%= av.getComentario() %>"</p>
+                </div>
                 <% } %>
+
+                <% if (av.getFoto() != null && !av.getFoto().isEmpty()) { %>
+                <div class="avaliacao-fotos">
+                    <div class="foto-thumbnail">
+                        <img src="<%= base %>/uploads/<%= av.getFoto() %>" 
+                             alt="Foto da entrega" 
+                             onclick="abrirFoto('<%= base %>/uploads/<%= av.getFoto() %>')">
+                    </div>
+                </div>
+                <% } %>
+            </div>
+            <% } %>
+        </div>
+    <% } %>
+</div>
+<% } %>
+                
+                
+                
+                
 
                 <!-- SEÇÃO: MINHAS AVALIAÇÕES (CLIENTE) -->
-                <% if (!"transportador".equalsIgnoreCase(tipoUsuario)) { %>
-                <div class="perfil-card perfil-avaliacoes-card">
-                    <div class="perfil-avaliacoes-header">
-                        <h3>Minhas Avaliações</h3>
-                        <p class="perfil-card-subtitle">
-                            Avaliações que você fez sobre os transportadores.
-                        </p>
-                    </div>
+<% if (!"transportador".equalsIgnoreCase(tipoUsuario)) { %>
+<div class="perfil-card perfil-avaliacoes-card">
+    <div class="perfil-avaliacoes-header">
+        <h3>Minhas Avaliações</h3>
+        <p class="perfil-card-subtitle">
+            Avaliações que você fez sobre os transportadores.
+        </p>
+    </div>
 
-                    <% if (avaliacoesFeitas == null || avaliacoesFeitas.isEmpty()) { %>
-                        <div class="empty-state">
-                            <i class="fa-regular fa-comment"></i>
-                            <p>Você ainda não fez nenhuma avaliação.</p>
-                            <small>As avaliações aparecerão aqui após você avaliar os fretes concluídos.</small>
+    <% if (avaliacoesFeitas == null || avaliacoesFeitas.isEmpty()) { %>
+        <div class="empty-state">
+            <i class="fa-regular fa-comment"></i>
+            <p>Você ainda não fez nenhuma avaliação.</p>
+            <small>As avaliações aparecerão aqui após você avaliar os fretes concluídos.</small>
+        </div>
+    <% } else { %>
+        <div class="avaliacoes-list">
+            <% for (Avaliacao av : avaliacoesFeitas) { %>
+            <div class="avaliacao-item">
+                <div class="avaliacao-header">
+                    <div class="avaliacao-user">
+                        <div class="user-avatar">
+                            <i class="fa-solid fa-truck"></i>
                         </div>
-                    <% } else { %>
-                        <div class="avaliacoes-list">
-                            <% for (Avaliacao av : avaliacoesFeitas) { %>
-                            <div class="avaliacao-item">
-                                <div class="avaliacao-header">
-                                    <div class="avaliacao-user">
-                                        <div class="user-avatar">
-                                            <i class="fa-solid fa-truck"></i>
-                                        </div>
-                                        <div class="user-info">
-                                            <span class="user-name">Transportador</span>
-                                            <div class="avaliacao-stars">
-                                                <% for (int i = 1; i <= 5; i++) { %>
-                                                    <i class="fas fa-star <%= i <= av.getNota() ? "active" : "" %>"></i>
-                                                <% } %>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <span class="avaliacao-date">
-                                        <%= av.getDataAvaliacao() != null ? 
-                                            av.getDataAvaliacao().toLocalDateTime().toLocalDate().toString() : "" %>
-                                    </span>
-                                </div>
-
-                                <% if (av.getComentario() != null && !av.getComentario().isEmpty()) { %>
-                                <div class="avaliacao-comentario">
-                                    <p>"<%= av.getComentario() %>"</p>
-                                </div>
-                                <% } %>
-
-                                <% if (av.getFoto() != null && !av.getFoto().isEmpty()) { %>
-                                <div class="avaliacao-fotos">
-                                    <div class="foto-thumbnail">
-                                        <img src="<%= base %>/uploads/<%= av.getFoto() %>" 
-                                             alt="Minha foto da entrega" 
-                                             onclick="abrirFoto('<%= base %>/uploads/<%= av.getFoto() %>')">
-                                    </div>
-                                </div>
+                        <div class="user-info">
+                            <span class="user-name">Transportador</span>
+                            <div class="avaliacao-stars">
+                                <% for (int i = 1; i <= 5; i++) { %>
+                                    <i class="fas fa-star <%= i <= av.getNota() ? "active" : "" %>"></i>
                                 <% } %>
                             </div>
-                            <% } %>
                         </div>
-                    <% } %>
+                    </div>
+                    <span class="avaliacao-date">
+                        <%= av.getDataAvaliacao() != null ? 
+                            av.getDataAvaliacao().toLocalDateTime().toLocalDate().toString() : "" %>
+                    </span>
+                </div>
+
+                <% if (av.getComentario() != null && !av.getComentario().isEmpty()) { %>
+                <div class="avaliacao-comentario">
+                    <p>"<%= av.getComentario() %>"</p>
                 </div>
                 <% } %>
+
+                <% if (av.getFoto() != null && !av.getFoto().isEmpty()) { %>
+                <div class="avaliacao-fotos">
+                    <div class="foto-thumbnail">
+                        <img src="<%= base %>/uploads/<%= av.getFoto() %>" 
+                             alt="Minha foto da entrega" 
+                             onclick="abrirFoto('<%= base %>/uploads/<%= av.getFoto() %>')">
+                    </div>
+                </div>
+                <% } %>
+            </div>
+            <% } %>
+        </div>
+    <% } %>
+</div>
+<% } %>
 
             </section>
         </div>
