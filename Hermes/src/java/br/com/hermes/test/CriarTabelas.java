@@ -12,6 +12,25 @@ public class CriarTabelas {
 
         String[] sqls = {
 
+            
+            //TABELA notificacao 
+            """
+            CREATE TABLE notificacao (
+                id SERIAL PRIMARY KEY,
+                id_usuario INTEGER NOT NULL,
+                titulo VARCHAR(200) NOT NULL,
+                mensagem TEXT NOT NULL,
+                tipo VARCHAR(50) NOT NULL, -- 'frete_aceito', 'frete_concluido', 'avaliacao_recebida'
+                lida BOOLEAN DEFAULT FALSE,
+                data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                id_frete INTEGER, -- opcional: link para o frete relacionado
+                FOREIGN KEY (id_usuario) REFERENCES usuario(id)
+            );
+            """,
+            
+            
+            
+            
             // =========================================================
             // TABELA USUÁRIO (unificada)
             // =========================================================
