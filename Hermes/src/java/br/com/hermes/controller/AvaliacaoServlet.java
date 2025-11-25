@@ -28,16 +28,22 @@ public class AvaliacaoServlet extends HttpServlet {
             return;
         }
 
+        System.out.println("=== DEBUG AvaliacaoServlet ===");
+
         try {
             // Campos do formulário
             String idFreteStr = request.getParameter("idFrete");
             String notaStr = request.getParameter("nota");
             String comentario = request.getParameter("comentario");
 
+            System.out.println("ID Frete: " + idFreteStr);
+            System.out.println("Nota: " + notaStr);
+            System.out.println("Comentário: " + (comentario != null ? comentario.substring(0, Math.min(comentario.length(), 50)) + "..." : "null"));
+
             int idFrete = Integer.parseInt(idFreteStr);
             int nota = Integer.parseInt(notaStr);
 
-            // Upload da foto
+            // Upload da foto (opcional)
             Part fotoPart = request.getPart("foto");
             String nomeFoto = null;
 
@@ -49,6 +55,7 @@ public class AvaliacaoServlet extends HttpServlet {
                 String originalName = fotoPart.getSubmittedFileName();
                 nomeFoto = System.currentTimeMillis() + "_" + originalName;
                 fotoPart.write(uploadPath + File.separator + nomeFoto);
+                System.out.println("Foto salva: " + nomeFoto);
             }
 
             // Criar objeto Avaliacao
@@ -58,18 +65,20 @@ public class AvaliacaoServlet extends HttpServlet {
             av.setComentario(comentario);
             av.setFoto(nomeFoto);
 
-            // Salvar via SERVICE (que já inclui as notificações)
+            // Salvar via SERVICE
+            System.out.println("Salvando avaliação no banco...");
             avaliacaoService.avaliar(av);
+            System.out.println("✅ Avaliação salva com sucesso!");
 
-            // Redirecionar para sucesso
-            request.setAttribute("mensagem", "Avaliação enviada com sucesso! O transportador foi notificado.");
-            request.setAttribute("tipoMensagem", "success");
-            request.getRequestDispatcher("/fretes/avaliacaoSucesso.jsp").forward(request, response);
+            // ✅ CORREÇÃO: Redirecionar para página de sucesso
+            response.sendRedirect(request.getContextPath() + "/fretes/avaliacaoSucesso.jsp");
 
         } catch (Exception e) {
+            System.err.println("❌ ERRO no AvaliacaoServlet: " + e.getMessage());
             e.printStackTrace();
+            
+            // ✅ CORREÇÃO: Em caso de erro, redirecionar para página de erro
             request.setAttribute("mensagem", "Erro ao enviar avaliação: " + e.getMessage());
-            request.setAttribute("tipoMensagem", "error");
             request.getRequestDispatcher("/fretes/avaliacaoFretes.jsp").forward(request, response);
         }
     }

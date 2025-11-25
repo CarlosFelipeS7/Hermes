@@ -17,6 +17,10 @@ public class AvaliacaoService {
     private final UsuarioDAO usuarioDAO = new UsuarioDAO();
 
     public void avaliar(Avaliacao av) throws Exception {
+        System.out.println("=== DEBUG AvaliacaoService.avaliar ===");
+        System.out.println("ID Frete: " + av.getIdFrete());
+        System.out.println("Nota: " + av.getNota());
+        System.out.println("Comentário: " + av.getComentario());
 
         if (av == null)
             throw new Exception("Avaliação inválida.");
@@ -27,8 +31,10 @@ public class AvaliacaoService {
         if (av.getNota() < 1 || av.getNota() > 5)
             throw new Exception("A nota precisa estar entre 1 e 5.");
 
-        if (isVazio(av.getComentario()))
-            throw new Exception("Comentário é obrigatório.");
+        // ✅ CORREÇÃO: Comentário NÃO é mais obrigatório
+        if (av.getComentario() == null) {
+            av.setComentario(""); // Define como string vazia se for null
+        }
 
         // ==========================================================
         // VALIDAR SE O FRETE PODE SER AVALIADO
@@ -59,38 +65,66 @@ public class AvaliacaoService {
         // ==========================================================
         // SALVAR AVALIAÇÃO NO BANCO
         // ==========================================================
-        avaliacaoDAO.inserir(av);
+        System.out.println("💾 Salvando avaliação no banco...");
+        boolean sucesso = avaliacaoDAO.inserir(av);
+        System.out.println("✅ Resultado do insert: " + sucesso);
+        
+        if (!sucesso) {
+            throw new Exception("Erro ao salvar avaliação no banco de dados");
+        }
 
         // ==========================================================
         // NOTIFICAR O TRANSPORTADOR SOBRE A NOVA AVALIAÇÃO
         // ==========================================================
-        Notificacao notificacaoTransportador = new Notificacao();
-        notificacaoTransportador.setIdUsuario(transportador.getId());
-        notificacaoTransportador.setTitulo("Nova Avaliação Recebida! ⭐");
-        notificacaoTransportador.setMensagem(
-            "Você recebeu " + av.getNota() + " estrela(s) de " + cliente.getNome() + 
-            " pelo frete de " + frete.getOrigem() + " para " + frete.getDestino() + 
-            ". Comentário: \"" + av.getComentario() + "\""
-        );
-        notificacaoTransportador.setTipo("avaliacao_recebida");
-        notificacaoTransportador.setIdFrete(av.getIdFrete());
-        
-        notificacaoDAO.inserir(notificacaoTransportador);
+        try {
+            Notificacao notificacaoTransportador = new Notificacao();
+            notificacaoTransportador.setIdUsuario(transportador.getId());
+            notificacaoTransportador.setTitulo("Nova Avaliação Recebida! ⭐");
+            
+            String mensagemTransportador = "Você recebeu " + av.getNota() + " estrela(s) de " + 
+                (cliente != null ? cliente.getNome() : "um cliente") + 
+                " pelo frete de " + frete.getOrigem() + " para " + frete.getDestino();
+            
+            // Adicionar comentário apenas se não estiver vazio
+            if (av.getComentario() != null && !av.getComentario().trim().isEmpty()) {
+                mensagemTransportador += ". Comentário: \"" + av.getComentario() + "\"";
+            }
+            
+            notificacaoTransportador.setMensagem(mensagemTransportador);
+            notificacaoTransportador.setTipo("avaliacao_recebida");
+            notificacaoTransportador.setIdFrete(av.getIdFrete());
+            
+            notificacaoDAO.inserir(notificacaoTransportador);
+            System.out.println("✅ Notificação enviada para transportador");
+        } catch (Exception e) {
+            System.err.println("⚠️ Erro ao enviar notificação para transportador: " + e.getMessage());
+            // Não lançar exceção para não interromper o fluxo principal
+        }
 
         // ==========================================================
         // NOTIFICAR O CLIENTE CONFIRMANDO A AVALIAÇÃO
         // ==========================================================
-        Notificacao notificacaoCliente = new Notificacao();
-        notificacaoCliente.setIdUsuario(cliente.getId());
-        notificacaoCliente.setTitulo("Avaliação Enviada! ✅");
-        notificacaoCliente.setMensagem(
-            "Sua avaliação de " + av.getNota() + " estrela(s) para o transportador " + 
-            transportador.getNome() + " foi registrada com sucesso."
-        );
-        notificacaoCliente.setTipo("avaliacao_enviada");
-        notificacaoCliente.setIdFrete(av.getIdFrete());
+        try {
+            if (cliente != null) {
+                Notificacao notificacaoCliente = new Notificacao();
+                notificacaoCliente.setIdUsuario(cliente.getId());
+                notificacaoCliente.setTitulo("Avaliação Enviada! ✅");
+                notificacaoCliente.setMensagem(
+                    "Sua avaliação de " + av.getNota() + " estrela(s) para o transportador " + 
+                    transportador.getNome() + " foi registrada com sucesso."
+                );
+                notificacaoCliente.setTipo("avaliacao_enviada");
+                notificacaoCliente.setIdFrete(av.getIdFrete());
+                
+                notificacaoDAO.inserir(notificacaoCliente);
+                System.out.println("✅ Notificação enviada para cliente");
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ Erro ao enviar notificação para cliente: " + e.getMessage());
+            // Não lançar exceção para não interromper o fluxo principal
+        }
         
-        notificacaoDAO.inserir(notificacaoCliente);
+        System.out.println("🎉 Avaliação processada com sucesso!");
     }
 
     // ==========================================================
