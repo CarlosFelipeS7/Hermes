@@ -1,6 +1,7 @@
 package br.com.hermes.service;
 
 import br.com.hermes.dao.FreteDAO;
+import br.com.hermes.dao.AvaliacaoDAO;
 import br.com.hermes.dao.NotificacaoDAO;
 import br.com.hermes.dao.UsuarioDAO;
 import br.com.hermes.model.Frete;
@@ -11,8 +12,178 @@ import java.util.List;
 public class FreteService {
 
     private final FreteDAO freteDAO = new FreteDAO();
+    private final AvaliacaoDAO avaliacaoDAO = new AvaliacaoDAO();
     private final NotificacaoDAO notificacaoDAO = new NotificacaoDAO();
     private final UsuarioDAO usuarioDAO = new UsuarioDAO();
+
+    // ==========================================================
+    // EXCLUIR FRETE - MÉTODO CORRIGIDO
+    // ==========================================================
+    public boolean excluirFrete(int idFrete, int idUsuario, String tipoUsuario) throws Exception {
+        System.out.println("=== DEBUG FreteService.excluirFrete ===");
+        System.out.println("ID Frete: " + idFrete);
+        System.out.println("ID Usuário: " + idUsuario);
+        System.out.println("Tipo Usuário: " + tipoUsuario);
+
+        // Validar parâmetros
+        if (idFrete <= 0) {
+            throw new Exception("ID do frete inválido.");
+        }
+
+        // Buscar frete
+        Frete frete = freteDAO.buscarPorId(idFrete);
+        if (frete == null) {
+            throw new Exception("Frete não encontrado.");
+        }
+
+        System.out.println("Frete encontrado:");
+        System.out.println(" - Status: " + frete.getStatus());
+        System.out.println(" - Cliente ID: " + frete.getIdCliente());
+        System.out.println(" - Transportador ID: " + frete.getIdTransportador());
+
+        // Verificar permissão
+        if (!temPermissaoParaExcluir(frete, idUsuario, tipoUsuario)) {
+            throw new Exception("Você não tem permissão para excluir este frete.");
+        }
+
+        // Verificar se pode excluir baseado no status
+        if (!podeExcluirPorStatus(frete.getStatus())) {
+            throw new Exception("Este frete não pode ser excluído. " +
+                              "Status atual: " + frete.getStatus() + ". " +
+                              "Apenas fretes com status 'disponível', 'pendente' ou 'concluído' podem ser excluídos.");
+        }
+
+        // ✅ VERIFICAR E EXCLUIR AVALIAÇÕES RELACIONADAS (se houver)
+        try {
+            System.out.println("Verificando avaliações relacionadas...");
+            // Se você tiver um método para excluir avaliação por frete, adicione aqui
+            // avaliacaoDAO.excluirPorFrete(idFrete);
+        } catch (Exception e) {
+            System.err.println("⚠️ Aviso: Não foi possível verificar avaliações: " + e.getMessage());
+        }
+
+        // ✅ EXCLUIR O FRETE
+        System.out.println("Tentando excluir frete do banco...");
+        boolean sucesso = freteDAO.excluir(idFrete);
+        
+        if (sucesso) {
+            System.out.println("✅ Frete excluído com sucesso do banco!");
+            
+            // ✅ ENVIAR NOTIFICAÇÃO DE EXCLUSÃO (se aplicável)
+            enviarNotificacaoExclusao(frete, idUsuario, tipoUsuario);
+            
+            return true;
+        } else {
+            System.err.println("❌ Falha ao excluir frete do banco.");
+            throw new Exception("Erro ao excluir frete do banco de dados.");
+        }
+    }
+
+    // ==========================================================
+    // VERIFICAR PERMISSÕES PARA EXCLUIR
+    // ==========================================================
+    private boolean temPermissaoParaExcluir(Frete frete, int idUsuario, String tipoUsuario) {
+        System.out.println("Verificando permissões...");
+        System.out.println(" - Tipo usuário: " + tipoUsuario);
+        System.out.println(" - ID usuário: " + idUsuario);
+        System.out.println(" - ID cliente frete: " + frete.getIdCliente());
+        System.out.println(" - ID transportador frete: " + frete.getIdTransportador());
+
+        // Admin pode excluir qualquer frete
+        if ("admin".equalsIgnoreCase(tipoUsuario)) {
+            System.out.println("✅ Permissão concedida: ADMIN");
+            return true;
+        }
+        
+        // Cliente pode excluir seus próprios fretes (se for o criador)
+        if ("cliente".equalsIgnoreCase(tipoUsuario)) {
+            boolean permitido = frete.getIdCliente() == idUsuario;
+            System.out.println("✅ Permissão CLIENTE: " + permitido);
+            return permitido;
+        }
+        
+        // Transportador pode excluir fretes que ele aceitou
+        if ("transportador".equalsIgnoreCase(tipoUsuario)) {
+            boolean permitido = frete.getIdTransportador() == idUsuario;
+            System.out.println("✅ Permissão TRANSPORTADOR: " + permitido);
+            return permitido;
+        }
+        
+        System.out.println("❌ Tipo de usuário não reconhecido: " + tipoUsuario);
+        return false;
+    }
+
+    // ==========================================================
+    // VERIFICAR SE PODE EXCLUIR BASEADO NO STATUS
+    // ==========================================================
+    private boolean podeExcluirPorStatus(String status) {
+        System.out.println("Verificando status para exclusão: " + status);
+        
+        boolean permitido = "disponivel".equalsIgnoreCase(status) || 
+               "concluido".equalsIgnoreCase(status) ||
+               "pendente".equalsIgnoreCase(status) ||
+               "aceito".equalsIgnoreCase(status); // Adicionei aceito também
+        
+        System.out.println("✅ Status permitido para exclusão: " + permitido);
+        return permitido;
+    }
+
+    // ==========================================================
+    // ENVIAR NOTIFICAÇÃO DE EXCLUSÃO
+    // ==========================================================
+    private void enviarNotificacaoExclusao(Frete frete, int idUsuario, String tipoUsuario) {
+        try {
+            Notificacao notificacao = new Notificacao();
+            notificacao.setIdUsuario(idUsuario);
+            notificacao.setTitulo("Frete Excluído 🗑️");
+            
+            String mensagem = "O frete de " + frete.getOrigem() + " para " + frete.getDestino();
+            
+            if ("cliente".equalsIgnoreCase(tipoUsuario)) {
+                mensagem += " foi excluído por você.";
+            } else if ("transportador".equalsIgnoreCase(tipoUsuario)) {
+                mensagem += " foi excluído pelo transportador.";
+            } else {
+                mensagem += " foi excluído pelo administrador.";
+            }
+            
+            notificacao.setMensagem(mensagem);
+            notificacao.setTipo("frete_excluido");
+            notificacao.setIdFrete(frete.getId());
+            
+            notificacaoDAO.inserir(notificacao);
+            System.out.println("✅ Notificação de exclusão enviada.");
+            
+        } catch (Exception e) {
+            System.err.println("⚠️ Erro ao enviar notificação de exclusão: " + e.getMessage());
+        }
+    }
+
+    // ==========================================================
+    // VERIFICAR SE USUÁRIO PODE EXCLUIR FRETE (para UI)
+    // ==========================================================
+    public boolean usuarioPodeExcluirFrete(int idFrete, int idUsuario, String tipoUsuario) {
+        try {
+            System.out.println("=== Verificando permissão UI para frete " + idFrete + " ===");
+            Frete frete = freteDAO.buscarPorId(idFrete);
+            if (frete == null) {
+                System.out.println("❌ Frete não encontrado");
+                return false;
+            }
+            
+            boolean temPermissao = temPermissaoParaExcluir(frete, idUsuario, tipoUsuario);
+            boolean statusPermitido = podeExcluirPorStatus(frete.getStatus());
+            
+            System.out.println("✅ Permissão UI: " + temPermissao);
+            System.out.println("✅ Status permitido UI: " + statusPermitido);
+            
+            return temPermissao && statusPermitido;
+            
+        } catch (Exception e) {
+            System.err.println("❌ Erro ao verificar permissão de exclusão: " + e.getMessage());
+            return false;
+        }
+    }
 
     // ==========================================================
     // CRIAR FRETE

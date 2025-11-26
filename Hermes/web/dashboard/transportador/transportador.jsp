@@ -1,8 +1,10 @@
 <%@ page pageEncoding="UTF-8" contentType="text/html; charset=UTF-8" %>
-<%@ page import="java.util.*, br.com.hermes.model.Frete" %>
+<%@ page import="java.util.*, br.com.hermes.model.Frete, br.com.hermes.service.FreteService" %>
 
 <%
     String nome = (String) session.getAttribute("usuarioNome");
+    Integer idUsuario = (Integer) session.getAttribute("usuarioId");
+    String tipoUsuario = (String) session.getAttribute("usuarioTipo");
 
     List<Frete> fretesDisponiveis = (List<Frete>) request.getAttribute("fretesDisponiveis");
     List<Frete> fretesEmAndamento = (List<Frete>) request.getAttribute("fretesEmAndamento");
@@ -20,6 +22,9 @@
         response.sendRedirect("../../auth/login/login.jsp");
         return;
     }
+    
+    // Inicializar o serviço para verificar permissões
+    FreteService freteService = new FreteService();
 %>
 
 <!DOCTYPE html>
@@ -82,6 +87,7 @@
             padding: 1.5rem;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             border-left: 4px solid #3498db;
+            transition: all 0.3s ease;
         }
         
         .frete-header {
@@ -138,8 +144,11 @@
             color: #2c3e50;
         }
         
-        .frete-action {
+        .frete-actions {
             margin-top: 1rem;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
         }
         
         .btn {
@@ -153,6 +162,11 @@
             font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.3s ease;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
         
         .btn-primary {
@@ -180,6 +194,15 @@
         
         .btn-secondary:hover {
             background: #7f8c8d;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
         }
         
         .btn-small {
@@ -226,6 +249,104 @@
         .section-subtitle {
             color: #7f8c8d;
             margin-bottom: 2rem;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 0;
+            border-radius: 8px;
+            width: 400px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .modal-header {
+            background: #e74c3c;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+        }
+        
+        .modal-header .close {
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-radius: 0 0 8px 8px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .text-warning {
+            color: #e67e22;
+            font-size: 14px;
+        }
+        
+        /* Alert messages */
+        .alert-floating {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideInRight 0.3s ease;
+            max-width: 400px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .btn i.fa-spinner {
+            margin-right: 5px;
         }
     </style>
 </head>
@@ -281,8 +402,10 @@
 
         <% if (!fretesAceitos.isEmpty()) { %>
             <div class="fretes-grid">
-                <% for (Frete f : fretesAceitos) { %>
-                    <div class="frete-card">
+                <% for (Frete f : fretesAceitos) { 
+                    boolean podeExcluir = freteService.usuarioPodeExcluirFrete(f.getId(), idUsuario, tipoUsuario);
+                %>
+                    <div class="frete-card" id="frete-<%= f.getId() %>">
                         <div class="frete-header">
                             <h3><i class="fas fa-map-marker-alt"></i> <%= f.getOrigem() %> → <%= f.getDestino() %></h3>
                             <span class="frete-status aceito">ACEITO</span>
@@ -298,13 +421,26 @@
                             </p>
                         </div>
 
-                        <form action="${pageContext.request.contextPath}/FreteServlet" method="post" class="frete-action">
-                            <input type="hidden" name="action" value="iniciar">
-                            <input type="hidden" name="idFrete" value="<%= f.getId() %>">
-                            <button type="submit" class="btn btn-primary btn-small">
-                                <i class="fas fa-play"></i> Iniciar Frete
-                            </button>
-                        </form>
+                        <div class="frete-actions">
+                            <form action="${pageContext.request.contextPath}/FreteServlet" method="post" style="display: inline;">
+                                <input type="hidden" name="action" value="iniciar">
+                                <input type="hidden" name="idFrete" value="<%= f.getId() %>">
+                                <button type="submit" class="btn btn-primary btn-small">
+                                    <i class="fas fa-play"></i> Iniciar Frete
+                                </button>
+                            </form>
+                            
+                            <!-- BOTÃO DE EXCLUIR PARA FRETES ACEITOS -->
+                            <% if (podeExcluir) { %>
+                                <button class="btn btn-danger btn-small btn-excluir-frete" 
+                                        data-frete-id="<%= f.getId() %>"
+                                        data-frete-origem="<%= f.getOrigem() %>"
+                                        data-frete-destino="<%= f.getDestino() %>"
+                                        data-frete-tipo="ACEITO">
+                                    <i class="fas fa-trash"></i> Excluir
+                                </button>
+                            <% } %>
+                        </div>
                     </div>
                 <% } %>
             </div>
@@ -321,8 +457,10 @@
 
         <% if (!fretesEmAndamento.isEmpty()) { %>
             <div class="fretes-grid">
-                <% for (Frete f : fretesEmAndamento) { %>
-                    <div class="frete-card">
+                <% for (Frete f : fretesEmAndamento) { 
+                    boolean podeExcluir = freteService.usuarioPodeExcluirFrete(f.getId(), idUsuario, tipoUsuario);
+                %>
+                    <div class="frete-card" id="frete-<%= f.getId() %>">
                         <div class="frete-header">
                             <h3><i class="fas fa-map-marker-alt"></i> <%= f.getOrigem() %> → <%= f.getDestino() %></h3>
                             <span class="frete-status em_andamento">EM ANDAMENTO</span>
@@ -338,14 +476,27 @@
                             </p>
                         </div>
 
-                        <form action="${pageContext.request.contextPath}/FreteServlet" method="post" class="frete-action">
-                            <input type="hidden" name="action" value="concluir">
-                            <input type="hidden" name="idFrete" value="<%= f.getId() %>">
-                            <button type="submit" class="btn btn-success btn-small" 
-                                    onclick="return confirm('Tem certeza que deseja finalizar este frete?')">
-                                <i class="fas fa-check-double"></i> Finalizar Frete
-                            </button>
-                        </form>
+                        <div class="frete-actions">
+                            <form action="${pageContext.request.contextPath}/FreteServlet" method="post" style="display: inline;">
+                                <input type="hidden" name="action" value="concluir">
+                                <input type="hidden" name="idFrete" value="<%= f.getId() %>">
+                                <button type="submit" class="btn btn-success btn-small" 
+                                        onclick="return confirm('Tem certeza que deseja finalizar este frete?')">
+                                    <i class="fas fa-check-double"></i> Finalizar Frete
+                                </button>
+                            </form>
+                            
+                            <!-- BOTÃO DE EXCLUIR PARA FRETES EM ANDAMENTO -->
+                            <% if (podeExcluir) { %>
+                                <button class="btn btn-danger btn-small btn-excluir-frete" 
+                                        data-frete-id="<%= f.getId() %>"
+                                        data-frete-origem="<%= f.getOrigem() %>"
+                                        data-frete-destino="<%= f.getDestino() %>"
+                                        data-frete-tipo="EM_ANDAMENTO">
+                                    <i class="fas fa-trash"></i> Excluir
+                                </button>
+                            <% } %>
+                        </div>
                     </div>
                 <% } %>
             </div>
@@ -362,8 +513,10 @@
 
         <% if (!fretesConcluidos.isEmpty()) { %>
             <div class="fretes-grid">
-                <% for (Frete f : fretesConcluidos) { %>
-                    <div class="frete-card">
+                <% for (Frete f : fretesConcluidos) { 
+                    boolean podeExcluir = freteService.usuarioPodeExcluirFrete(f.getId(), idUsuario, tipoUsuario);
+                %>
+                    <div class="frete-card" id="frete-<%= f.getId() %>">
                         <div class="frete-header">
                             <h3><i class="fas fa-map-marker-alt"></i> <%= f.getOrigem() %> → <%= f.getDestino() %></h3>
                             <span class="frete-status concluido">CONCLUÍDO</span>
@@ -378,10 +531,21 @@
                             </p>
                         </div>
                         
-                        <div class="frete-action">
+                        <div class="frete-actions">
                             <span style="color: #27ae60; font-weight: 600;">
                                 <i class="fas fa-check-circle"></i> Frete finalizado com sucesso
                             </span>
+                            
+                            <!-- BOTÃO DE EXCLUIR PARA FRETES CONCLUÍDOS -->
+                            <% if (podeExcluir) { %>
+                                <button class="btn btn-danger btn-small btn-excluir-frete" 
+                                        data-frete-id="<%= f.getId() %>"
+                                        data-frete-origem="<%= f.getOrigem() %>"
+                                        data-frete-destino="<%= f.getDestino() %>"
+                                        data-frete-tipo="CONCLUIDO">
+                                    <i class="fas fa-trash"></i> Excluir
+                                </button>
+                            <% } %>
                         </div>
                     </div>
                 <% } %>
@@ -399,8 +563,10 @@
 
         <% if (!fretesRecentes.isEmpty()) { %>
             <div class="fretes-grid">
-                <% for (Frete f : fretesRecentes) { %>
-                    <div class="frete-card">
+                <% for (Frete f : fretesRecentes) { 
+                    boolean podeExcluir = freteService.usuarioPodeExcluirFrete(f.getId(), idUsuario, tipoUsuario);
+                %>
+                    <div class="frete-card" id="frete-<%= f.getId() %>">
                         <div class="frete-header">
                             <h3><i class="fas fa-truck-moving"></i> <%= f.getOrigem() %> → <%= f.getDestino() %></h3>
                             <span class="frete-status <%= f.getStatus().toLowerCase() %>">
@@ -415,6 +581,19 @@
                                 <%= (f.getDataSolicitacao() != null ? f.getDataSolicitacao().toLocalDateTime().toLocalDate() : "") %>
                             </p>
                         </div>
+                        
+                        <!-- BOTÃO DE EXCLUIR PARA FRETES RECENTES -->
+                        <% if (podeExcluir) { %>
+                            <div class="frete-actions">
+                                <button class="btn btn-danger btn-small btn-excluir-frete" 
+                                        data-frete-id="<%= f.getId() %>"
+                                        data-frete-origem="<%= f.getOrigem() %>"
+                                        data-frete-destino="<%= f.getDestino() %>"
+                                        data-frete-tipo="<%= f.getStatus().toUpperCase() %>">
+                                    <i class="fas fa-trash"></i> Excluir
+                                </button>
+                            </div>
+                        <% } %>
                     </div>
                 <% } %>
             </div>
@@ -432,23 +611,311 @@
     </div>
 </section>
 
+<!-- Modal de Confirmação de Exclusão -->
+<div id="modalExcluirFrete" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Confirmar Exclusão</h3>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>Tem certeza que deseja excluir o frete de <strong id="freteOrigem"></strong> para <strong id="freteDestino"></strong>?</p>
+            <p class="text-warning">⚠️ Esta ação não pode ser desfeita!</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="fecharModalExclusao()">Cancelar</button>
+            <button type="button" class="btn btn-danger" id="btnConfirmarExclusao">Sim, Excluir</button>
+        </div>
+    </div>
+</div>
+
 <jsp:include page="../../components/footer.jsp" />
 
 <script>
-    // Confirmação para ações importantes
-    document.addEventListener('DOMContentLoaded', function() {
-        const forms = document.querySelectorAll('form');
-        forms.forEach(form => {
-            const button = form.querySelector('button[type="submit"]');
-            if (button && button.textContent.includes('Finalizar')) {
-                form.addEventListener('submit', function(e) {
-                    if (!confirm('Tem certeza que deseja finalizar este frete? Esta ação não pode ser desfeita.')) {
-                        e.preventDefault();
-                    }
-                });
+// Variáveis globais para armazenar dados do frete
+let freteAtualId = null;
+let freteAtualOrigem = null;
+let freteAtualDestino = null;
+let freteAtualTipo = null;
+
+function abrirModalExclusao(freteId, origem, destino, tipo) {
+    console.log('Abrindo modal para frete:', freteId, origem, destino, tipo);
+    freteAtualId = freteId;
+    freteAtualOrigem = origem;
+    freteAtualDestino = destino;
+    freteAtualTipo = tipo;
+    
+    document.getElementById('freteOrigem').textContent = origem;
+    document.getElementById('freteDestino').textContent = destino;
+    document.getElementById('modalExcluirFrete').style.display = 'block';
+}
+
+function fecharModalExclusao() {
+    document.getElementById('modalExcluirFrete').style.display = 'none';
+    // Limpa os dados
+    freteAtualId = null;
+    freteAtualOrigem = null;
+    freteAtualDestino = null;
+    freteAtualTipo = null;
+}
+
+// ✅ ATUALIZA ESTATÍSTICAS CORRETAMENTE
+function atualizarEstatisticas(tipoFrete) {
+    console.log(`Atualizando estatísticas para tipo: ${tipoFrete}`);
+    
+    // Mapeia os tipos de frete para os índices dos cards
+    const tipoParaIndice = {
+        'ACEITO': 1,        // Segundo card (Aceitos - Para Iniciar)
+        'EM_ANDAMENTO': 2,  // Terceiro card (Em Andamento) 
+        'CONCLUIDO': 3,     // Quarto card (Concluídos)
+        'DISPONIVEL': 0     // Primeiro card (Fretes Disponíveis)
+    };
+    
+    const statNumbers = document.querySelectorAll('.stat-number');
+    const indice = tipoParaIndice[tipoFrete];
+    
+    if (indice !== undefined && statNumbers[indice]) {
+        const current = parseInt(statNumbers[indice].textContent) || 0;
+        if (current > 0) {
+            statNumbers[indice].textContent = current - 1;
+            console.log(`Estatística atualizada: ${tipoFrete} de ${current} para ${current - 1}`);
+        }
+    }
+}
+
+// ✅ REMOVE O FRETE VISUALMENTE DA LISTA - CORRIGIDO
+function removerFreteDaLista(freteId, tipoFrete) {
+    console.log(`Removendo frete ${freteId} do tipo ${tipoFrete}`);
+    
+    // ✅ CORREÇÃO: Usar o ID que vem do servlet, não da variável global
+    const freteIdParaRemover = freteId || freteAtualId;
+    console.log('ID para remover:', freteIdParaRemover);
+    
+    if (!freteIdParaRemover) {
+        console.error('❌ ID do frete não encontrado para remoção');
+        mostrarMensagemErro('Erro: ID do frete não encontrado.');
+        return;
+    }
+    
+    const freteElement = document.getElementById(`frete-${freteIdParaRemover}`);
+    console.log('Elemento encontrado:', freteElement);
+    
+    if (freteElement) {
+        // Encontra a seção pai para verificar se ficará vazia
+        const section = freteElement.closest('.fretes-grid');
+        
+        // Animação de fade out
+        freteElement.style.transition = 'all 0.3s ease';
+        freteElement.style.opacity = '0';
+        freteElement.style.transform = 'translateX(-100px)';
+        
+        // Remove após a animação
+        setTimeout(() => {
+            freteElement.remove();
+            
+            // Atualiza estatísticas baseadas no tipo
+            atualizarEstatisticas(tipoFrete);
+            
+            // Verifica se a seção ficou vazia
+            verificarListaVazia(section);
+            
+            console.log('✅ Frete removido visualmente com sucesso');
+        }, 300);
+    } else {
+        console.error('❌ Elemento do frete não encontrado. ID:', freteIdParaRemover);
+        console.log('Tentando buscar elemento com ID:', `frete-${freteIdParaRemover}`);
+        mostrarMensagemErro('Elemento não encontrado na página. Recarregando...');
+        setTimeout(() => location.reload(), 2000);
+    }
+}
+
+// ✅ FUNÇÃO PRINCIPAL DE EXCLUSÃO COM AJAX - CORRIGIDA
+function confirmarExclusao() {
+    if (!freteAtualId) {
+        mostrarMensagemErro('Erro: ID do frete não encontrado.');
+        return;
+    }
+
+    console.log('Iniciando exclusão do frete:', freteAtualId, 'Tipo:', freteAtualTipo);
+
+    // Mostra loading no botão
+    const btnExcluir = document.getElementById('btnConfirmarExclusao');
+    const btnOriginalText = btnExcluir.innerHTML;
+    btnExcluir.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Excluindo...';
+    btnExcluir.disabled = true;
+
+    // ✅ FAZ REQUISIÇÃO AJAX
+    fetch('${pageContext.request.contextPath}/ExcluirFreteServlet', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: 'idFrete=' + freteAtualId
+    })
+    .then(response => {
+        console.log('Resposta recebida, status:', response.status);
+        if (!response.ok) {
+            throw new Error('Erro na rede: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Dados recebidos:', data);
+        
+        // ✅ CORREÇÃO: Usar o freteId da resposta, não da variável global
+        const freteIdExcluido = data.freteId || freteAtualId;
+        console.log('ID do frete excluído (da resposta):', freteIdExcluido);
+        
+        if (data.success) {
+            // ✅ SUCESSO - Remove o frete da lista usando o ID da resposta
+            removerFreteDaLista(freteIdExcluido, freteAtualTipo);
+            mostrarMensagemSucesso(data.message || 'Frete excluído com sucesso!');
+            fecharModalExclusao();
+        } else {
+            // ❌ ERRO
+            mostrarMensagemErro(data.message || 'Erro ao excluir frete.');
+        }
+    })
+    .catch(error => {
+        console.error('Erro na requisição:', error);
+        mostrarMensagemErro('Erro de conexão. Tente novamente.');
+    })
+    .finally(() => {
+        // Restaura o botão independente do resultado
+        btnExcluir.innerHTML = btnOriginalText;
+        btnExcluir.disabled = false;
+    });
+}
+
+// ✅ VERIFICA SE A LISTA ESTÁ VAZIA E MOSTRA ESTADO VAZIO
+function verificarListaVazia(section) {
+    if (!section) return;
+    
+    const fretesCards = section.querySelectorAll('.frete-card');
+    const emptyState = section.querySelector('.empty-state');
+    const sectionTitle = section.previousElementSibling;
+    
+    if (fretesCards.length === 0) {
+        if (!emptyState) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'empty-state';
+            
+            // Mensagem personalizada baseada no título da seção
+            let mensagem = 'Nenhum frete encontrado';
+            let icon = 'fa-box-open';
+            
+            if (sectionTitle && sectionTitle.textContent.includes('Aceitos')) {
+                mensagem = 'Nenhum frete aguardando início';
+                icon = 'fa-clock';
+            } else if (sectionTitle && sectionTitle.textContent.includes('Andamento')) {
+                mensagem = 'Nenhum frete em andamento';
+                icon = 'fa-truck-moving';
+            } else if (sectionTitle && sectionTitle.textContent.includes('Concluídos')) {
+                mensagem = 'Nenhum frete concluído';
+                icon = 'fa-check-circle';
+            } else if (sectionTitle && sectionTitle.textContent.includes('Últimos')) {
+                mensagem = 'Você ainda não aceitou nenhum frete';
+                icon = 'fa-truck-loading';
             }
+            
+            emptyDiv.innerHTML = `
+                <i class="fas ${icon} fa-3x"></i>
+                <h3>${mensagem}</h3>
+                <p>${mensagem.includes('aguardando') ? 'Todos os fretes aceitos já estão em andamento ou concluídos.' : 
+                    mensagem.includes('andamento') ? 'Você não tem fretes em andamento no momento.' :
+                    mensagem.includes('concluído') ? 'Os fretes concluídos aparecerão aqui.' :
+                    'Explore os fretes disponíveis para começar a trabalhar.'}</p>
+            `;
+            
+            // Adiciona botão de ação se for a seção de últimos fretes
+            if (mensagem.includes('nenhum frete')) {
+                emptyDiv.innerHTML += `
+                    <a href="${pageContext.request.contextPath}/FreteListarServlet" class="btn btn-primary" style="margin-top: 1rem;">
+                        <i class="fas fa-search"></i> Buscar Fretes
+                    </a>
+                `;
+            }
+            
+            section.appendChild(emptyDiv);
+        }
+    } else {
+        // Remove empty state se houver fretes
+        if (emptyState) {
+            emptyState.remove();
+        }
+    }
+}
+
+// ✅ MOSTRA MENSAGEM DE SUCESSO
+function mostrarMensagemSucesso(mensagem) {
+    showFloatingMessage(mensagem, 'success');
+}
+
+// ✅ MOSTRA MENSAGEM DE ERRO
+function mostrarMensagemErro(mensagem) {
+    showFloatingMessage(mensagem, 'error');
+}
+
+// ✅ FUNÇÃO UNIFICADA PARA MENSAGENS
+function showFloatingMessage(mensagem, tipo) {
+    // Remove mensagens anteriores
+    const alertasAntigos = document.querySelectorAll('.alert-floating');
+    alertasAntigos.forEach(alerta => alerta.remove());
+    
+    // Cria nova mensagem
+    const alerta = document.createElement('div');
+    alerta.className = `alert-floating alert-${tipo}`;
+    
+    const icon = tipo === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+    alerta.innerHTML = `<i class="fas ${icon}"></i> ${mensagem}`;
+    
+    document.body.appendChild(alerta);
+    
+    // Remove após alguns segundos
+    setTimeout(() => {
+        if (alerta.parentNode) {
+            alerta.remove();
+        }
+    }, tipo === 'success' ? 3000 : 5000);
+}
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const botoesExcluir = document.querySelectorAll('.btn-excluir-frete');
+    
+    botoesExcluir.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const freteId = this.getAttribute('data-frete-id');
+            const origem = this.getAttribute('data-frete-origem');
+            const destino = this.getAttribute('data-frete-destino');
+            const tipo = this.getAttribute('data-frete-tipo');
+            
+            abrirModalExclusao(freteId, origem, destino, tipo);
         });
     });
+
+    // Botão de confirmar exclusão
+    document.getElementById('btnConfirmarExclusao').addEventListener('click', confirmarExclusao);
+
+    // Fechar modal
+    document.querySelector('.modal .close')?.addEventListener('click', fecharModalExclusao);
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('modalExcluirFrete');
+        if (event.target === modal) {
+            fecharModalExclusao();
+        }
+    });
+
+    // Prevenir comportamento padrão de botões dentro de formulários
+    document.querySelectorAll('.btn-excluir-frete').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    });
+});
 </script>
 
 </body>
