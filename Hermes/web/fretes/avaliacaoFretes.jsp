@@ -2,26 +2,36 @@
 <%@ page import="java.sql.*, br.com.hermes.dao.FreteDAO, br.com.hermes.model.Frete" %>
 
 <%
-    // VALIDAÇÃO CONTRA PARÂMETRO NULL
+    // ============================
+    // VALIDAR PARÂMETRO "id"
+    // ============================
     String idParam = request.getParameter("id");
     if (idParam == null || idParam.trim().isEmpty()) {
-        response.sendRedirect("erro.jsp?mensagem=ID do frete não informado");
+        response.sendRedirect(request.getContextPath() + "/erro.jsp?mensagem=ID do frete não informado");
         return;
     }
-    
+
     Frete f = null;
+
     try {
         int idFrete = Integer.parseInt(idParam.trim());
         FreteDAO dao = new FreteDAO();
         f = dao.buscarPorId(idFrete);
-        
-        // Verificar se o frete pode ser avaliado
-        if (f == null || !"concluido".equalsIgnoreCase(f.getStatus())) {
-            response.sendRedirect("erro.jsp?mensagem=Este frete não pode ser avaliado");
+
+        // Verificar se existe
+        if (f == null) {
+            response.sendRedirect(request.getContextPath() + "/erro.jsp?mensagem=Frete não encontrado");
             return;
         }
-    } catch (NumberFormatException e) {
-        response.sendRedirect("erro.jsp?mensagem=ID do frete inválido");
+
+        // Verificar se está concluído
+        if (!"concluido".equalsIgnoreCase(f.getStatus())) {
+            response.sendRedirect(request.getContextPath() + "/erro.jsp?mensagem=Este frete ainda não pode ser avaliado");
+            return;
+        }
+
+    } catch (Exception e) {
+        response.sendRedirect(request.getContextPath() + "/erro.jsp?mensagem=ID do frete inválido");
         return;
     }
 %>
@@ -33,118 +43,8 @@
     <title>Avaliar Transportador - Hermes</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/navbar.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/avaliacoes.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
-    <style>
-        .avaliacao-section {
-            padding: 2rem 0;
-            background: #f8f9fa;
-            min-height: 80vh;
-        }
-        
-        .avaliacao-container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 2rem;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .avaliacao-header {
-            text-align: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid #e9ecef;
-        }
-        
-        .frete-info {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-        }
-        
-        .stars-rating {
-            text-align: center;
-            margin: 2rem 0;
-        }
-        
-        .stars {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            margin: 1rem 0;
-        }
-        
-        .star-input {
-            display: none;
-        }
-        
-        .star-label {
-            font-size: 2rem;
-            color: #ddd;
-            cursor: pointer;
-            transition: color 0.2s ease;
-        }
-        
-        .star-label:hover,
-        .star-input:checked ~ .star-label {
-            color: #ffc107;
-        }
-        
-        .star-label:hover ~ .star-label {
-            color: #ffc107;
-        }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        
-        .form-group textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #e9ecef;
-            border-radius: 6px;
-            resize: vertical;
-            min-height: 100px;
-            font-family: inherit;
-        }
-        
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #27ae60;
-        }
-        
-        .btn-avaliar {
-            background: #27ae60;
-            color: white;
-            border: none;
-            padding: 0.75rem 2rem;
-            border-radius: 6px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background 0.3s ease;
-            width: 100%;
-        }
-        
-        .btn-avaliar:hover {
-            background: #219653;
-        }
-        
-        .rating-text {
-            text-align: center;
-            color: #7f8c8d;
-            margin-top: 0.5rem;
-        }
-    </style>
 </head>
 
 <body>
@@ -164,7 +64,7 @@
             <p><strong>Destino:</strong> <%= f.getDestino() %></p>
             <p><strong>Peso:</strong> <%= f.getPeso() %> kg</p>
             <p><strong>Valor:</strong> R$ <%= String.format("%.2f", f.getValor()) %></p>
-            <p><strong>Status:</strong> <span style="color: #27ae60; font-weight: 600;">CONCLUÍDO</span></p>
+            <p><strong>Status:</strong> <span style="color:#27ae60;font-weight:600;">CONCLUÍDO</span></p>
         </div>
 
         <form action="${pageContext.request.contextPath}/AvaliacaoServlet" method="post" enctype="multipart/form-data">
@@ -194,13 +94,12 @@
 
             <div class="form-group">
                 <label for="comentario"><i class="fas fa-comment"></i> Comentário (opcional):</label>
-                <textarea name="comentario" id="comentario" placeholder="Conte como foi sua experiência com o transportador..."></textarea>
+                <textarea name="comentario" id="comentario" placeholder="Conte como foi sua experiência..."></textarea>
             </div>
 
             <div class="form-group">
                 <label for="foto"><i class="fas fa-camera"></i> Foto da entrega (opcional):</label>
                 <input type="file" name="foto" id="foto" accept="image/*" class="form-control">
-                <small style="color: #7f8c8d;">Formatos aceitos: JPG, PNG, GIF (máx. 5MB)</small>
             </div>
 
             <button type="submit" class="btn-avaliar">
@@ -216,33 +115,21 @@
     document.addEventListener('DOMContentLoaded', function() {
         const starInputs = document.querySelectorAll('.star-input');
         const ratingText = document.getElementById('ratingText');
-        
-        const ratingMessages = {
-            1: "Péssimo - Serviço muito abaixo do esperado",
-            2: "Ruim - Serviço abaixo do esperado", 
-            3: "Regular - Serviço dentro do esperado",
-            4: "Bom - Serviço acima do esperado",
-            5: "Excelente - Serviço excepcional"
+
+        const messages = {
+            1: "Péssimo",
+            2: "Ruim",
+            3: "Regular",
+            4: "Bom",
+            5: "Excelente"
         };
-        
+
         starInputs.forEach(star => {
-            star.addEventListener('change', function() {
-                const rating = this.value;
-                ratingText.textContent = ratingMessages[rating];
-                ratingText.style.color = '#27ae60';
-                ratingText.style.fontWeight = '600';
+            star.addEventListener('change', () => {
+                ratingText.textContent = messages[star.value];
+                ratingText.style.color = "#27ae60";
+                ratingText.style.fontWeight = "600";
             });
-        });
-        
-        // Validação do formulário
-        const form = document.querySelector('form');
-        form.addEventListener('submit', function(e) {
-            const nota = document.querySelector('input[name="nota"]:checked');
-            if (!nota) {
-                e.preventDefault();
-                alert('Por favor, selecione uma nota para a avaliação.');
-                return;
-            }
         });
     });
 </script>
