@@ -34,86 +34,19 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/footer.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-    <style>
-        /* Estilos para notificações na navbar */
-        .notification-link {
-            position: relative;
-            display: flex;
-            align-items: center;
-            padding: 0.5rem;
-            color: var(--text-color);
-            text-decoration: none;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-            margin-right: 0.5rem;
-        }
-        
-        .notification-link:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--primary-color);
-        }
-        
-        .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #e74c3c;
-            color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 0.7rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            border: 2px solid var(--bg-color);
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .user-name {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            color: var(--text-color);
-            text-decoration: none;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-        }
-        
-        .user-name:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--primary-color);
-        }
-        
-        .user-name i {
-            font-size: 1.2rem;
-        }
-        
-        /* Mobile styles */
-        @media (max-width: 768px) {
-            .user-name-text {
-                display: none;
-            }
-            
-            .notification-link {
-                margin-right: 0;
-            }
-        }
-    </style>
+    <!-- Favicon Hermes -->
+    <link rel="apple-touch-icon" sizes="180x180" 
+          href="${pageContext.request.contextPath}/assets/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" 
+          href="${pageContext.request.contextPath}/assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" 
+          href="${pageContext.request.contextPath}/assets/favicon/favicon-16x16.png">
+    <link rel="shortcut icon" 
+          href="${pageContext.request.contextPath}/assets/favicon/favicon.ico" type="image/x-icon">
+    <link rel="manifest" 
+          href="${pageContext.request.contextPath}/assets/favicon/site.webmanifest">
+
+    
 </head>
 
 <nav class="navbar">

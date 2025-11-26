@@ -12,27 +12,24 @@ public class CriarTabelas {
 
         String[] sqls = {
 
-            
-            //TABELA notificacao 
+            // =========================================================
+            // TABELA NOTIFICAÇÃO
+            // =========================================================
             """
-            CREATE TABLE notificacao (
+            CREATE TABLE IF NOT EXISTS notificacao (
                 id SERIAL PRIMARY KEY,
-                id_usuario INTEGER NOT NULL,
+                id_usuario INTEGER NOT NULL REFERENCES usuario(id),
                 titulo VARCHAR(200) NOT NULL,
                 mensagem TEXT NOT NULL,
-                tipo VARCHAR(50) NOT NULL, -- 'frete_aceito', 'frete_concluido', 'avaliacao_recebida'
+                tipo VARCHAR(50) NOT NULL,
                 lida BOOLEAN DEFAULT FALSE,
                 data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                id_frete INTEGER, -- opcional: link para o frete relacionado
-                FOREIGN KEY (id_usuario) REFERENCES usuario(id)
+                id_frete INTEGER REFERENCES frete(id)
             );
             """,
-            
-            
-            
-            
+
             // =========================================================
-            // TABELA USUÁRIO (unificada)
+            // TABELA USUÁRIO
             // =========================================================
             """
             CREATE TABLE IF NOT EXISTS usuario (
@@ -60,7 +57,7 @@ public class CriarTabelas {
                 descricao_carga TEXT,
                 peso DECIMAL(10,2),
                 valor DECIMAL(10,2),
-                status VARCHAR(20) DEFAULT 'PENDENTE',
+                status VARCHAR(20) DEFAULT 'pendente',
                 data_solicitacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 data_conclusao TIMESTAMP NULL,
                 id_cliente INTEGER REFERENCES usuario(id),
@@ -69,7 +66,7 @@ public class CriarTabelas {
             """,
 
             // =========================================================
-            // TABELA AVALIAÇÃO
+            // TABELA AVALIAÇÃO (OFICIAL)
             // =========================================================
             """
             CREATE TABLE IF NOT EXISTS avaliacao (
@@ -80,7 +77,25 @@ public class CriarTabelas {
                 id_frete INTEGER REFERENCES frete(id),
                 id_avaliador INTEGER REFERENCES usuario(id),
                 id_avaliado INTEGER REFERENCES usuario(id),
-                tipo VARCHAR(30) NOT NULL
+                tipo VARCHAR(30) NOT NULL,
+                foto VARCHAR(200)
+            );
+            """,
+
+            // =========================================================
+            // TABELA AVALIAÇÃO BACKUP
+            // =========================================================
+            """
+            CREATE TABLE IF NOT EXISTS avaliacao_backup (
+                id SERIAL PRIMARY KEY,
+                nota INTEGER NOT NULL CHECK (nota BETWEEN 1 AND 5),
+                comentario TEXT,
+                data_avaliacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                id_frete INTEGER REFERENCES frete(id),
+                id_avaliador INTEGER REFERENCES usuario(id),
+                id_avaliado INTEGER REFERENCES usuario(id),
+                tipo VARCHAR(200),
+                foto VARCHAR(200)
             );
             """
         };
@@ -94,7 +109,7 @@ public class CriarTabelas {
             }
 
             System.out.println("\n🎉 TODAS AS TABELAS FORAM CRIADAS COM SUCESSO!");
-            System.out.println("👉 Agora você já pode cadastrar usuário e fazer login.");
+            System.out.println("👉 Agora você já pode cadastrar usuário, frete e fazer avaliações.");
 
         } catch (Exception e) {
             System.out.println("❌ Erro ao criar tabelas: " + e.getMessage());
