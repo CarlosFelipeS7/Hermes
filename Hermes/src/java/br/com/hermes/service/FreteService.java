@@ -7,7 +7,10 @@ import br.com.hermes.dao.UsuarioDAO;
 import br.com.hermes.model.Frete;
 import br.com.hermes.model.Notificacao;
 import br.com.hermes.model.Usuario;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FreteService {
 
@@ -385,6 +388,41 @@ public class FreteService {
         return frete;
     }
 
+    
+    // No FreteService, adicione:
+public Map<String, Object> obterInfoRastreamento(int idFrete) throws Exception {
+    Map<String, Object> info = new HashMap<>();
+    
+    Frete frete = freteDAO.buscarPorId(idFrete);
+    if (frete == null) {
+        throw new Exception("Frete não encontrado.");
+    }
+    
+    info.put("frete", frete);
+    info.put("etapas", obterEtapasRastreamento(frete.getStatus()));
+    info.put("localizacaoAtual", obterLocalizacaoSimulada(frete.getStatus()));
+    
+    return info;
+}
+
+private List<String> obterEtapasRastreamento(String status) {
+    List<String> etapas = Arrays.asList(
+        "Solicitado", "Aceito", "Em Transporte", "Entregue"
+    );
+    return etapas;
+}
+
+private String obterLocalizacaoSimulada(String status) {
+    switch (status.toLowerCase()) {
+        case "pendente": return "Aguardando coleta";
+        case "aceito": return "Preparando para coleta";
+        case "em_andamento": return "Em trânsito - Próximo ao destino";
+        case "concluido": return "Entregue no destino final";
+        default: return "Status desconhecido";
+    }
+}
+    
+    
     // ==========================================================
     // VERIFICAR SE CLIENTE PODE AVALIAR FRETE
     // ==========================================================
