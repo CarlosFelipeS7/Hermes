@@ -1,5 +1,6 @@
 <%@ page pageEncoding="UTF-8" contentType="text/html; charset=UTF-8" %>
 <%@ page import="java.util.*, br.com.hermes.model.Frete, br.com.hermes.service.FreteService" %>
+<%@ page import="java.util.*, br.com.hermes.model.Veiculo, br.com.hermes.service.VeiculoService" %>
 
 <%
     String nome = (String) session.getAttribute("usuarioNome");
@@ -395,7 +396,15 @@
             <a href="${pageContext.request.contextPath}/FreteListarServlet" class="btn btn-primary">
                 <i class="fas fa-truck-loading"></i> Ver Todos os Fretes Disponíveis
             </a>
+                
+                <!-- NOVO BOTÃO PARA GERENCIAR VEÍCULOS -->
+            <a href="${pageContext.request.contextPath}/VeiculoServlet" class="btn btn-success" style="margin-left: 10px;">
+                <i class="fas fa-truck"></i> Gerenciar Meus Veículos
+            </a>
         </div>
+        </div>
+                
+                
 
         <!-- FRETES ACEITOS (PRONTOS PARA INICIAR) -->
         <h2 class="fretes-title">Fretes Aceitos - Prontos para Iniciar</h2>
@@ -509,7 +518,7 @@
         <% } %>
 
         <!-- FRETES CONCLUÍDOS -->
-        <h2 class="fretes-title" style="margin-top: 40px;">Fretes Concluídos Recentemente</h2>
+        <h2 class="fretes-title" style="margin-top: 40px;">Fretes Concluídos</h2>
 
         <% if (!fretesConcluidos.isEmpty()) { %>
             <div class="fretes-grid">
@@ -557,56 +566,56 @@
                 <p>Os fretes concluídos aparecerão aqui.</p>
             </div>
         <% } %>
+        
+            <div class="veiculos-container">
+            <div class="page-header">
+                <h1 class="page-title">Meus Veículos</h1>
+                <button class="btn btn-primary" onclick="abrirModalCadastro()">
+                    <i class="fas fa-plus"></i> Cadastrar Veículo
+                </button>
+            </div>
 
-        <!-- ÚLTIMOS FRETES ACEITOS -->
-        <h2 class="fretes-title" style="margin-top: 40px;">Últimos Fretes Aceitos</h2>
+            <% if (veiculos.isEmpty()) { %>
+                <div class="empty-state">
+                    <i class="fas fa-truck fa-3x"></i>
+                    <h3>Nenhum veículo cadastrado</h3>
+                    <p>Cadastre seu primeiro veículo para começar a aceitar fretes.</p>
+                    <button class="btn btn-primary" onclick="abrirModalCadastro()" style="margin-top: 1rem;">
+                        <i class="fas fa-plus"></i> Cadastrar Primeiro Veículo
+                    </button>
+                </div>
+            <% } else { %>
+                <div class="veiculos-grid">
+                    <% for (Veiculo v : veiculos) { %>
+                        <div class="veiculo-card" id="veiculo-<%= v.getId() %>">
+                            <div class="veiculo-header">
+                                <h3><%= v.getMarca() %> <%= v.getModelo() %></h3>
+                                <span class="veiculo-placa"><%= v.getPlaca() %></span>
+                            </div>
 
-        <% if (!fretesRecentes.isEmpty()) { %>
-            <div class="fretes-grid">
-                <% for (Frete f : fretesRecentes) { 
-                    boolean podeExcluir = freteService.usuarioPodeExcluirFrete(f.getId(), idUsuario, tipoUsuario);
-                %>
-                    <div class="frete-card" id="frete-<%= f.getId() %>">
-                        <div class="frete-header">
-                            <h3><i class="fas fa-truck-moving"></i> <%= f.getOrigem() %> → <%= f.getDestino() %></h3>
-                            <span class="frete-status <%= f.getStatus().toLowerCase() %>">
-                                <%= f.getStatus().toUpperCase() %>
-                            </span>
-                        </div>
-                        
-                        <div class="frete-info">
-                            <p><strong>Status:</strong> <%= f.getStatus() %></p>
-                            <p><strong>Peso:</strong> <%= f.getPeso() %> kg</p>
-                            <p><strong>Data Solicitação:</strong>
-                                <%= (f.getDataSolicitacao() != null ? f.getDataSolicitacao().toLocalDateTime().toLocalDate() : "") %>
-                            </p>
-                        </div>
-                        
-                        <!-- BOTÃO DE EXCLUIR PARA FRETES RECENTES -->
-                        <% if (podeExcluir) { %>
-                            <div class="frete-actions">
-                                <button class="btn btn-danger btn-small btn-excluir-frete" 
-                                        data-frete-id="<%= f.getId() %>"
-                                        data-frete-origem="<%= f.getOrigem() %>"
-                                        data-frete-destino="<%= f.getDestino() %>"
-                                        data-frete-tipo="<%= f.getStatus().toUpperCase() %>">
+                            <div class="veiculo-info">
+                                <p><strong>Tipo:</strong> <%= v.getTipoVeiculo() %></p>
+                                <p><strong>Ano:</strong> <%= v.getAno() %></p>
+                                <p><strong>Cor:</strong> <%= v.getCor() != null ? v.getCor() : "Não informada" %></p>
+                                <p><strong>Capacidade:</strong> <%= String.format("%.2f", v.getCapacidade()) %> kg</p>
+                                <p><strong>Cadastrado em:</strong> 
+                                    <%= v.getDataCadastro() != null ? v.getDataCadastro().toLocalDate() : "" %>
+                                </p>
+                            </div>
+
+                            <div class="veiculo-actions">
+                                <button class="btn btn-danger btn-small btn-excluir-veiculo" 
+                                        data-veiculo-id="<%= v.getId() %>"
+                                        data-veiculo-modelo="<%= v.getMarca() %> <%= v.getModelo() %>"
+                                        data-veiculo-placa="<%= v.getPlaca() %>">
                                     <i class="fas fa-trash"></i> Excluir
                                 </button>
                             </div>
-                        <% } %>
-                    </div>
-                <% } %>
-            </div>
-        <% } else { %>
-            <div class="empty-state">
-                <i class="fas fa-truck-loading fa-3x"></i>
-                <h3>Você ainda não aceitou nenhum frete</h3>
-                <p>Explore os fretes disponíveis para começar a trabalhar.</p>
-                <a href="${pageContext.request.contextPath}/FreteListarServlet" class="btn btn-primary" style="margin-top: 1rem;">
-                    <i class="fas fa-search"></i> Buscar Fretes
-                </a>
-            </div>
-        <% } %>
+                        </div>
+                    <% } %>
+                </div>
+            <% } %>
+        </div>
 
     </div>
 </section>

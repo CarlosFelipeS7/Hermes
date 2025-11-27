@@ -975,8 +975,11 @@
     /* Estados vazios */
     .empty-state {
         text-align: center;
-        padding: 3rem;
-        color: var(--gray);
+        padding: 2rem;
+        color: #7f8c8d;
+        background: white;
+        border-radius: 12px;
+        margin: 4rem 0;
     }
 
     .empty-state i {
@@ -1162,7 +1165,7 @@
     color: #7f8c8d;
     background: white;
     border-radius: 12px;
-    margin: 10rem 0;
+    margin: 4rem 0;
 }
 
 .empty-state i {

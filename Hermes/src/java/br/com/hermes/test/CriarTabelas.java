@@ -13,6 +13,42 @@ public class CriarTabelas {
         String[] sqls = {
 
             // =========================================================
+            // TABELA USUÁRIO (ATUALIZADA - removendo coluna veiculo)
+            // =========================================================
+            """
+            CREATE TABLE IF NOT EXISTS usuario (
+                id SERIAL PRIMARY KEY,
+                nome VARCHAR(100) NOT NULL,
+                email VARCHAR(100) UNIQUE NOT NULL,
+                senha VARCHAR(200) NOT NULL,
+                tipo_usuario VARCHAR(20) NOT NULL CHECK (tipo_usuario IN ('cliente','transportador','admin')),
+                telefone VARCHAR(20),
+                endereco TEXT,
+                documento VARCHAR(20),
+                data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            """,
+
+            // =========================================================
+            // TABELA VEÍCULO (NOVA TABELA)
+            // =========================================================
+            """
+            CREATE TABLE IF NOT EXISTS veiculo (
+                id SERIAL PRIMARY KEY,
+                id_usuario INTEGER NOT NULL REFERENCES usuario(id),
+                tipo_veiculo VARCHAR(50) NOT NULL,
+                marca VARCHAR(50) NOT NULL,
+                modelo VARCHAR(50) NOT NULL,
+                ano INTEGER NOT NULL,
+                placa VARCHAR(10) UNIQUE NOT NULL,
+                capacidade DECIMAL(10,2) NOT NULL,
+                cor VARCHAR(30),
+                ativo BOOLEAN DEFAULT TRUE,
+                data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            """,
+
+            // =========================================================
             // TABELA NOTIFICAÇÃO
             // =========================================================
             """
@@ -25,24 +61,6 @@ public class CriarTabelas {
                 lida BOOLEAN DEFAULT FALSE,
                 data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 id_frete INTEGER REFERENCES frete(id)
-            );
-            """,
-
-            // =========================================================
-            // TABELA USUÁRIO
-            // =========================================================
-            """
-            CREATE TABLE IF NOT EXISTS usuario (
-                id SERIAL PRIMARY KEY,
-                nome VARCHAR(100) NOT NULL,
-                email VARCHAR(100) UNIQUE NOT NULL,
-                senha VARCHAR(200) NOT NULL,
-                tipo_usuario VARCHAR(20) NOT NULL CHECK (tipo_usuario IN ('cliente','transportador','admin')),
-                telefone VARCHAR(20),
-                endereco TEXT,
-                documento VARCHAR(20),
-                veiculo VARCHAR(50),
-                data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
             """,
 
@@ -109,7 +127,7 @@ public class CriarTabelas {
             }
 
             System.out.println("\n🎉 TODAS AS TABELAS FORAM CRIADAS COM SUCESSO!");
-            System.out.println("👉 Agora você já pode cadastrar usuário, frete e fazer avaliações.");
+            System.out.println("👉 Agora você já pode cadastrar usuários, veículos, fretes e fazer avaliações.");
 
         } catch (Exception e) {
             System.out.println("❌ Erro ao criar tabelas: " + e.getMessage());
