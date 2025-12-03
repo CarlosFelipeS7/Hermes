@@ -187,8 +187,10 @@ public class UsuarioService {
     }
 
     // Exclusão lógica (recomendado)
+    // ✅ EXCLUSÃO DEFINITIVA
     usuarioDAO.deletar(id);
-    System.out.println("✅ Conta do usuário ID " + id + " desativada com sucesso.");
+    System.out.println("✅ Conta do usuário ID " + id + " EXCLUÍDA definitivamente.");
+
 }
 
     // ==========================================================

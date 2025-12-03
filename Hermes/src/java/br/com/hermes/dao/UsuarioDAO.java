@@ -74,49 +74,20 @@ public class UsuarioDAO {
         return lista;
     }
 
-    // Autenticar
-   // Autenticar - versão corrigida para verificar se usuário está ativo
-public Usuario autenticar(String email, String senha) throws Exception {
-    // Verifica se a coluna ativo existe na tabela
-    String sql = "SELECT * FROM usuario WHERE email = ? AND senha = ?";
-    
-    // Primeiro, tente com a verificação de ativo
-    try {
-        sql = "SELECT * FROM usuario WHERE email = ? AND senha = ? AND ativo = true";
-    } catch (Exception e) {
-        // Se falhar, usa a versão sem verificação (para compatibilidade)
-        sql = "SELECT * FROM usuario WHERE email = ? AND senha = ?";
-    }
+   // AUTENTICAR
+    public Usuario autenticar(String email, String senha) throws Exception {
+        String sql = "SELECT * FROM usuario WHERE email = ? AND senha = ?";
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-    try (Connection conn = Conexao.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-        stmt.setString(1, email);
-        stmt.setString(2, hashSenha(senha));
-
-        ResultSet rs = stmt.executeQuery();
-        if (rs.next()) {
-            Usuario usuario = mapUsuario(rs);
-            
-            // Verificação adicional no objeto
-            try {
-                // Tenta obter o valor da coluna ativo
-                boolean ativo = rs.getBoolean("ativo");
-                if (!ativo) {
-                    System.out.println("⚠️ Usuário " + email + " está desativado");
-                    return null;
-                }
-            } catch (SQLException e) {
-                // Coluna ativo não existe, continua normalmente
-                System.out.println("ℹ️ Coluna 'ativo' não encontrada, ignorando verificação");
-            }
-            
-            return usuario;
+            stmt.setString(1, email);
+            stmt.setString(2, hashSenha(senha));
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return mapUsuario(rs);
         }
+        return null;
     }
 
-    return null;
-}
 
     // Atualizar COMPLETO (corrigido)
     public void atualizar(Usuario u) throws Exception {
@@ -158,27 +129,76 @@ public Usuario autenticar(String email, String senha) throws Exception {
         }
     }
 
-    // Deletar
-  public void deletar(int id) throws Exception {
-    // Em vez de excluir, marca como inativo
-    String sql = "UPDATE usuario SET ativo = false WHERE id = ?";
-    
-    try (Connection conn = Conexao.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql)) {
-        
-        stmt.setInt(1, id);
-        int rows = stmt.executeUpdate();
-        
-        if (rows == 0) {
-            throw new Exception("Usuário não encontrado.");
+    public void deletar(int id) throws Exception {
+
+    String sqlNotificacoes = """
+        DELETE FROM notificacao 
+        WHERE id_usuario = ?
+    """;
+
+    String sqlAvaliacoes = """
+        DELETE FROM avaliacao 
+        WHERE id_frete IN (
+            SELECT id FROM frete 
+            WHERE id_cliente = ? OR id_transportador = ?
+        )
+    """;
+
+    String sqlFretes = """
+        DELETE FROM frete 
+        WHERE id_cliente = ? OR id_transportador = ?
+    """;
+
+    String sqlUsuario = "DELETE FROM usuario WHERE id = ?";
+
+    try (Connection conn = Conexao.getConnection()) {
+
+        conn.setAutoCommit(false); // ✅ TRANSAÇÃO
+
+        try (
+            PreparedStatement stmt0 = conn.prepareStatement(sqlNotificacoes);
+            PreparedStatement stmt1 = conn.prepareStatement(sqlAvaliacoes);
+            PreparedStatement stmt2 = conn.prepareStatement(sqlFretes);
+            PreparedStatement stmt3 = conn.prepareStatement(sqlUsuario);
+        ) {
+
+            // 1️⃣ APAGA NOTIFICAÇÕES DO USUÁRIO
+            stmt0.setInt(1, id);
+            stmt0.executeUpdate();
+
+            // 2️⃣ APAGA AVALIAÇÕES DOS FRETES DO USUÁRIO
+            stmt1.setInt(1, id);
+            stmt1.setInt(2, id);
+            stmt1.executeUpdate();
+
+            // 3️⃣ APAGA FRETES DO USUÁRIO
+            stmt2.setInt(1, id);
+            stmt2.setInt(2, id);
+            stmt2.executeUpdate();
+
+            // 4️⃣ APAGA O USUÁRIO
+            stmt3.setInt(1, id);
+            int rows = stmt3.executeUpdate();
+
+            if (rows == 0) {
+                throw new Exception("Usuário não encontrado.");
+            }
+
+            conn.commit(); // ✅ CONFIRMA TUDO
+
+            System.out.println("✅ Usuário, notificações, fretes e avaliações apagados com sucesso.");
+
+        } catch (Exception e) {
+            conn.rollback(); // ❌ DESFAZ TUDO
+            throw e;
         }
-        
-        System.out.println("✅ Usuário ID " + id + " desativado (exclusão lógica).");
-        
-    } catch (SQLException e) {
-        throw new Exception("Erro ao desativar usuário: " + e.getMessage());
     }
 }
+
+
+
+
+
 
     // Transportadores por DDD
     public List<Usuario> listarTransportadoresPorDDD(String ddd) throws Exception {
@@ -223,19 +243,17 @@ public Usuario autenticar(String email, String senha) throws Exception {
 
     // Buscar por ID
     public Usuario buscarPorId(int id) throws Exception {
-       String sql = "SELECT * FROM usuario WHERE id = ? AND (ativo IS NULL OR ativo = true)";
-
+        String sql = "SELECT * FROM usuario WHERE id = ?";
         try (Connection conn = Conexao.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
-
             if (rs.next()) return mapUsuario(rs);
         }
-
         return null;
     }
+
 
     // Mapear resultset → objeto
     private Usuario mapUsuario(ResultSet rs) throws Exception {

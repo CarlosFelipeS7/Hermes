@@ -137,14 +137,7 @@
                             <div class="input-focus-line"></div>
                         </div>
 
-                        <div class="form-group floating animated-input">
-                            <input type="text" id="veiculo" name="veiculo" class="form-input" placeholder=" ">
-                            <label for="veiculo" class="form-label">
-                                <i class="fas fa-truck"></i>
-                                Tipo de Veículo
-                            </label>
-                            <div class="input-focus-line"></div>
-                        </div>
+                      
                     </div>
                 </div>
 
