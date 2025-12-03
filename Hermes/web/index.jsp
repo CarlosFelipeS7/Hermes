@@ -109,7 +109,7 @@
         <div class="complement-grid">
             <div class="complement-content">
                 <h2>Transforme sua operação de fretes</h2>
-                <h3>Texto para colocar ainda :)</h3>
+                <h3>Seja HERMES</h3>
                 <p>Sistema completo para gerenciamento de fretes, com cobertura nacional e suporte especializado.</p>
 
                 <ul class="feature-list">
