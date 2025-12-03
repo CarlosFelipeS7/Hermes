@@ -176,19 +176,20 @@ public class UsuarioService {
     // ==========================================================
     // EXCLUIR USUÁRIO
     // ==========================================================
-    public void excluir(int id) throws Exception {
-        if (id <= 0) {
-            throw new Exception("ID do usuário inválido.");
-        }
-
-        // Verificar se o usuário existe antes de excluir
-        Usuario usuario = usuarioDAO.buscarPorId(id);
-        if (usuario == null) {
-            throw new Exception("Usuário não encontrado.");
-        }
-
-        usuarioDAO.deletar(id);
+   public void excluir(int id) throws Exception {
+    if (id <= 0) {
+        throw new Exception("ID do usuário inválido.");
     }
+
+    Usuario usuario = usuarioDAO.buscarPorId(id);
+    if (usuario == null) {
+        throw new Exception("Usuário não encontrado.");
+    }
+
+    // Exclusão lógica (recomendado)
+    usuarioDAO.deletar(id);
+    System.out.println("✅ Conta do usuário ID " + id + " desativada com sucesso.");
+}
 
     // ==========================================================
     // LISTAR TODOS OS USUÁRIOS

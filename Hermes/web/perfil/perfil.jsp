@@ -45,6 +45,9 @@
     <!-- CSS global + CSS específico do perfil -->
     <link rel="stylesheet" href="<%= base %>/assets/css/style.css">
     <link rel="stylesheet" href="<%= base %>/assets/css/perfil.css">
+    
+   
+    
 </head>
 <body>
 
@@ -162,6 +165,17 @@
                             <span class="perfil-stat-label">Região de atuação</span>
                         </div>
                     </div>
+                </div>
+                
+                <!-- NOVA SEÇÃO: EXCLUIR CONTA -->
+                <div class="perfil-card perfil-delete-card">
+                    <h3><i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i> Zona de Perigo</h3>
+                    <p style="font-size: 0.9rem; color: #7f8c8d; margin-bottom: 1rem;">
+                        Esta ação é irreversível. Todos seus dados serão permanentemente excluídos.
+                    </p>
+                    <button type="button" class="btn btn-danger btn-block" id="btnExcluirConta">
+                        <i class="fas fa-trash"></i> Excluir minha conta
+                    </button>
                 </div>
             </aside>
 
@@ -431,24 +445,322 @@
 <div id="fotoModal" class="modal">
     <span class="modal-close" onclick="fecharFoto()">&times;</span>
     <img class="modal-content" id="modalFoto">
+<!-- MODAL DE EXCLUSÃO - FIXO NO CENTRO DA TELA -->
+<div id="modalExcluirConta" class="modal-exclusao-overlay" style="
+    display: none;
+    position: fixed;  
+    top: 0;
+    left: 0;
+    width: 100vw;  
+    height: 100vh; 
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 9999;  
+    justify-content: center;
+    align-items: center;
+    overflow: auto; 
+">
+    
+    <div class="modal-exclusao-container" style="
+        background: white;
+        border-radius: 12px;
+        width: 500px;
+        max-width: 90vw; 
+        margin: 20px;  
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        position: relative; 
+        ">
+        <!-- HEADER VERMELHO -->
+        <div style="
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        ">
+            <h3 style="margin: 0; font-size: 1.3rem; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-exclamation-triangle"></i> Confirmar Exclusão
+            </h3>
+            <button onclick="fecharModalExclusao()" style="
+                background: none;
+                border: none;
+                color: white;
+                font-size: 28px;
+                cursor: pointer;
+                padding: 0;
+                margin: 0;
+                line-height: 1;
+                transition: opacity 0.2s;
+            ">&times;</button>
+        </div>
+        
+        <!-- CONTEÚDO -->
+        <div style="padding: 25px; color: #333; max-height: 60vh; overflow-y: auto;">
+            <p><strong>Atenção! Esta ação é irreversível.</strong></p>
+            <p style="color: #e74c3c; font-weight: bold; margin: 15px 0;">
+                TODOS os seus dados serão excluídos permanentemente:
+            </p>
+            <ul style="margin: 15px 0 20px 20px; padding: 0; list-style-type: disc;">
+                <li style="margin-bottom: 8px;">Seu perfil e dados pessoais</li>
+                <li style="margin-bottom: 8px;">Todos os seus fretes</li>
+                <li style="margin-bottom: 8px;">Histórico de atividades</li>
+                <li style="margin-bottom: 8px;">Avaliações realizadas/recebidas</li>
+                <% if ("transportador".equalsIgnoreCase(tipoUsuario)) { %>
+                <li style="margin-bottom: 8px;">Seus veículos cadastrados</li>
+                <% } %>
+            </ul>
+            
+            <p style="margin-top: 20px;">
+                Digite <strong style="color: #e74c3c;">EXCLUIR CONTA</strong> para confirmar:
+            </p>
+            <input type="text" id="confirmacaoTexto" placeholder="Digite EXCLUIR CONTA aqui" style="
+                width: 100%;
+                padding: 12px 15px;
+                border: 2px solid #ddd;
+                border-radius: 8px;
+                font-size: 1rem;
+                font-family: 'Inter', sans-serif;
+                margin-top: 10px;
+                box-sizing: border-box;
+                transition: border-color 0.3s;
+            ">
+        </div>
+        
+        <!-- BOTÕES -->
+        <div style="
+            padding: 20px;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            border-top: 1px solid #e9ecef;
+        ">
+            <button onclick="fecharModalExclusao()" style="
+                background: #95a5a6;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 0.95rem;
+                transition: background 0.3s;
+            ">
+                Cancelar
+            </button>
+            <button onclick="confirmarExclusaoConta()" id="btnConfirmarExclusao" disabled style="
+                background: #e74c3c;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 0.95rem;
+                transition: background 0.3s, opacity 0.3s;
+            ">
+                <i class="fas fa-trash"></i> Excluir Conta
+            </button>
+        </div>
+    </div>
 </div>
 
+<style>
+/* Estilos para garantir que o modal fique sempre no topo */
+.modal-exclusao-overlay {
+    display: none;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 9999 !important;
+    background-color: rgba(0, 0, 0, 0.7) !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-exclusao-container {
+    position: relative;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Garantir que o modal fique acima de tudo */
+#modalExcluirConta {
+    z-index: 9999 !important;
+}
+
+/* Quando o modal estiver aberto, evitar scroll no body */
+body.modal-open {
+    overflow: hidden;
+}
+</style>
+
 <script>
-// Modal para fotos
-function abrirFoto(src) {
-    document.getElementById('modalFoto').src = src;
-    document.getElementById('fotoModal').style.display = 'block';
+// Função para abrir modal CORRETAMENTE
+function abrirModalExclusao() {
+    console.log("Abrindo modal de exclusão...");
+    
+    var modal = document.getElementById('modalExcluirConta');
+    if (!modal) {
+        console.error("Modal não encontrado!");
+        return;
+    }
+    
+    // Forçar estilo inline para garantir
+    modal.style.cssText = 'display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background-color: rgba(0, 0, 0, 0.7) !important; z-index: 9999 !important; align-items: center !important; justify-content: center !important;';
+    
+    // Prevenir scroll no body
+    document.body.classList.add('modal-open');
+    
+    // Limpar campo e desabilitar botão
+    document.getElementById('confirmacaoTexto').value = '';
+    document.getElementById('btnConfirmarExclusao').disabled = true;
+    
+    // Focar no campo
+    setTimeout(function() {
+        var input = document.getElementById('confirmacaoTexto');
+        if (input) input.focus();
+    }, 100);
+    
+    console.log("Modal aberto com sucesso!");
 }
 
-function fecharFoto() {
-    document.getElementById('fotoModal').style.display = 'none';
+// Função para fechar modal
+function fecharModalExclusao() {
+    var modal = document.getElementById('modalExcluirConta');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    
+    // Restaurar scroll no body
+    document.body.classList.remove('modal-open');
+    
+    console.log("Modal fechado!");
 }
 
-// Fechar modal clicando fora
-window.onclick = function(event) {
-    const modal = document.getElementById('fotoModal');
-    if (event.target === modal) {
-        fecharFoto();
+// Função de exclusão
+function confirmarExclusaoConta() {
+    var btn = document.getElementById('btnConfirmarExclusao');
+    if (!btn) return;
+    
+    var originalText = btn.innerHTML;
+    
+    // Mostrar loading
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Excluindo...';
+    btn.disabled = true;
+    
+    // Confirmar novamente
+    if (!confirm('⚠️ TEM CERTEZA ABSOLUTA?\n\nEsta ação NÃO pode ser desfeita!\nTodos os seus dados serão PERDIDOS permanentemente.')) {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        return;
+    }
+    
+    // Fazer requisição AJAX
+    fetch('<%= base %>/ExcluirUsuarioServlet', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Conta excluída com sucesso!\nVocê será redirecionado para a página inicial.');
+            window.location.href = '<%= base %>/LogoutServlet';
+        } else {
+            alert('❌ Erro ao excluir conta: ' + data.message);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('❌ Erro de conexão. Verifique sua internet e tente novamente.');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+// Configurar eventos quando o DOM carregar
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Configurando eventos do modal...");
+    
+    // 1. Campo de confirmação
+    var input = document.getElementById('confirmacaoTexto');
+    var btn = document.getElementById('btnConfirmarExclusao');
+    
+    if (input && btn) {
+        input.addEventListener('input', function() {
+            var textoDigitado = this.value.toUpperCase().trim();
+            btn.disabled = textoDigitado !== 'EXCLUIR CONTA';
+            
+            // Feedback visual
+            if (textoDigitado === 'EXCLUIR CONTA') {
+                this.style.borderColor = '#27ae60';
+            } else {
+                this.style.borderColor = '#ddd';
+            }
+        });
+        
+        // Permitir Enter para confirmar
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !btn.disabled) {
+                confirmarExclusaoConta();
+            }
+        });
+    }
+    
+    // 2. Botão "Excluir minha conta"
+    var btnAbrir = document.getElementById('btnExcluirConta');
+    if (btnAbrir) {
+        console.log("Botão de abrir encontrado!");
+        btnAbrir.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            abrirModalExclusao();
+        });
+    } else {
+        console.error("Botão btnExcluirConta NÃO encontrado!");
+    }
+    
+    // 3. Fechar modal com ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            fecharModalExclusao();
+        }
+    });
+    
+    // 4. Fechar modal clicando fora
+    window.addEventListener('click', function(event) {
+        var modal = document.getElementById('modalExcluirConta');
+        if (event.target === modal) {
+            fecharModalExclusao();
+        }
+    });
+    
+    console.log("Eventos configurados com sucesso!");
+});
+
+// Fechar modal com clique no X ou fora
+function closeModalOnOutsideClick(event) {
+    var modal = document.getElementById('modalExcluirConta');
+    if (modal && event.target === modal) {
+        fecharModalExclusao();
     }
 }
 </script>

@@ -153,6 +153,16 @@ public class CriarTabelas {
                 tipo VARCHAR(30),
                 foto VARCHAR(255)
             );
+            
+            
+            -- 1. Adicionar a coluna ativo à tabela usuario
+            ALTER TABLE usuario ADD COLUMN IF NOT EXISTS ativo BOOLEAN DEFAULT true;
+            
+            -- 2. Atualizar todos os usuários existentes para ativo = true
+            UPDATE usuario SET ativo = true WHERE ativo IS NULL;
+            
+            -- 3. Adicionar constraint NOT NULL após atualizar
+            ALTER TABLE usuario ALTER COLUMN ativo SET NOT NULL;
             """
                 
                 
