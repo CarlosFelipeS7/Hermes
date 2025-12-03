@@ -13,38 +13,81 @@ public class CriarTabelas {
         String[] sqls = {
 
             // =========================================================
-            // TABELA USUÁRIO (ATUALIZADA - removendo coluna veiculo)
+            // TABELA USUÁRIO
             // =========================================================
             """
             CREATE TABLE IF NOT EXISTS usuario (
                 id SERIAL PRIMARY KEY,
                 nome VARCHAR(100) NOT NULL,
-                email VARCHAR(100) UNIQUE NOT NULL,
-                senha VARCHAR(200) NOT NULL,
-                tipo_usuario VARCHAR(20) NOT NULL CHECK (tipo_usuario IN ('cliente','transportador','admin')),
+                email VARCHAR(100) NOT NULL UNIQUE,
+                senha VARCHAR(100) NOT NULL,
+                tipo_usuario VARCHAR(30) NOT NULL,
                 telefone VARCHAR(20),
                 endereco TEXT,
-                documento VARCHAR(20),
-                data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                estado VARCHAR(50),            
+                cidade VARCHAR(50),           
+                veiculo VARCHAR(100),
+                documento VARCHAR(30),
+                data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                ddd VARCHAR(5)
             );
             """,
 
             // =========================================================
-            // TABELA VEÍCULO (NOVA TABELA)
+            // TABELA CLIENTE
             // =========================================================
             """
-            CREATE TABLE IF NOT EXISTS veiculo (
+            CREATE TABLE IF NOT EXISTS cliente (
                 id SERIAL PRIMARY KEY,
-                id_usuario INTEGER NOT NULL REFERENCES usuario(id),
-                tipo_veiculo VARCHAR(50) NOT NULL,
-                marca VARCHAR(50) NOT NULL,
-                modelo VARCHAR(50) NOT NULL,
-                ano INTEGER NOT NULL,
-                placa VARCHAR(10) UNIQUE NOT NULL,
-                capacidade DECIMAL(10,2) NOT NULL,
-                cor VARCHAR(30),
-                ativo BOOLEAN DEFAULT TRUE,
-                data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                nome VARCHAR(100) NOT NULL,
+                email VARCHAR(100) NOT NULL UNIQUE,
+                senha VARCHAR(100) NOT NULL,
+                endereco TEXT,
+                data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                telefone VARCHAR(20),
+                foto_perfil VARCHAR(255),
+                data_nascimento DATE
+            );
+            """,
+
+            // =========================================================
+            // TABELA TRANSPORTADOR
+            // =========================================================
+            """
+            CREATE TABLE IF NOT EXISTS transportador (
+                id SERIAL PRIMARY KEY,
+                nome VARCHAR(100) NOT NULL,
+                email VARCHAR(100) NOT NULL UNIQUE,
+                senha VARCHAR(100) NOT NULL,
+                veiculo VARCHAR(50),
+                documento VARCHAR(20),
+                data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                telefone VARCHAR(20),
+                foto_perfil VARCHAR(255),
+                data_nascimento DATE,
+                avaliacao_media NUMERIC(3,2) DEFAULT 0
+            );
+            """,
+
+            // =========================================================
+            // TABELA FRETE
+            // =========================================================
+            """
+            CREATE TABLE IF NOT EXISTS frete (
+                id SERIAL PRIMARY KEY,
+                origem VARCHAR(200) NOT NULL,
+                destino VARCHAR(200) NOT NULL,
+                descricao_carga TEXT,
+                peso NUMERIC(10,2),
+                valor NUMERIC(10,2),
+                status VARCHAR(20) DEFAULT 'PENDENTE',
+                data_solicitacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                data_conclusao TIMESTAMP,
+                id_cliente INTEGER REFERENCES usuario(id),
+                id_transportador INTEGER REFERENCES usuario(id),
+                origem_ddd VARCHAR(5),
+                ddd_origem VARCHAR(2),
+                ddd_destino VARCHAR(3)
             );
             """,
 
@@ -65,38 +108,33 @@ public class CriarTabelas {
             """,
 
             // =========================================================
-            // TABELA FRETE
-            // =========================================================
-            """
-            CREATE TABLE IF NOT EXISTS frete (
-                id SERIAL PRIMARY KEY,
-                origem VARCHAR(200) NOT NULL,
-                destino VARCHAR(200) NOT NULL,
-                descricao_carga TEXT,
-                peso DECIMAL(10,2),
-                valor DECIMAL(10,2),
-                status VARCHAR(20) DEFAULT 'pendente',
-                data_solicitacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                data_conclusao TIMESTAMP NULL,
-                id_cliente INTEGER REFERENCES usuario(id),
-                id_transportador INTEGER REFERENCES usuario(id)
-            );
-            """,
-
-            // =========================================================
-            // TABELA AVALIAÇÃO (OFICIAL)
+            // TABELA AVALIAÇÃO
             // =========================================================
             """
             CREATE TABLE IF NOT EXISTS avaliacao (
                 id SERIAL PRIMARY KEY,
-                nota INTEGER NOT NULL CHECK (nota >= 1 AND nota <= 5),
-                comentario TEXT,
-                data_avaliacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 id_frete INTEGER REFERENCES frete(id),
-                id_avaliador INTEGER REFERENCES usuario(id),
-                id_avaliado INTEGER REFERENCES usuario(id),
-                tipo VARCHAR(30) NOT NULL,
-                foto VARCHAR(200)
+                nota INTEGER NOT NULL,
+                comentario TEXT,
+                data_avaliacao TIMESTAMP DEFAULT NOW()
+            );
+            """,
+            // =========================================================
+            // TABELA VEÍCULO
+            // =========================================================
+            """
+            CREATE TABLE IF NOT EXISTS veiculo (
+                id SERIAL PRIMARY KEY,
+                id_usuario INTEGER NOT NULL REFERENCES usuario(id),
+                tipo_veiculo VARCHAR(50) NOT NULL,
+                marca VARCHAR(50) NOT NULL,
+                modelo VARCHAR(50) NOT NULL,
+                ano INTEGER NOT NULL,
+                placa VARCHAR(10) UNIQUE NOT NULL,
+                capacidade NUMERIC(10,2) NOT NULL,
+                cor VARCHAR(30),
+                ativo BOOLEAN DEFAULT TRUE,
+                data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
             """,
 
@@ -112,10 +150,12 @@ public class CriarTabelas {
                 id_frete INTEGER REFERENCES frete(id),
                 id_avaliador INTEGER REFERENCES usuario(id),
                 id_avaliado INTEGER REFERENCES usuario(id),
-                tipo VARCHAR(200),
-                foto VARCHAR(200)
+                tipo VARCHAR(30),
+                foto VARCHAR(255)
             );
             """
+                
+                
         };
 
         try (Connection conn = Conexao.getConnection();
@@ -123,14 +163,13 @@ public class CriarTabelas {
 
             for (int i = 0; i < sqls.length; i++) {
                 stmt.executeUpdate(sqls[i]);
-                System.out.println("✅ Tabela criada com sucesso (" + (i + 1) + ")!");
+                System.out.println("✅ Tabela criada: " + (i + 1));
             }
 
             System.out.println("\n🎉 TODAS AS TABELAS FORAM CRIADAS COM SUCESSO!");
-            System.out.println("👉 Agora você já pode cadastrar usuários, veículos, fretes e fazer avaliações.");
 
         } catch (Exception e) {
-            System.out.println("❌ Erro ao criar tabelas: " + e.getMessage());
+            System.out.println("❌ Erro: " + e.getMessage());
             e.printStackTrace();
         }
     }

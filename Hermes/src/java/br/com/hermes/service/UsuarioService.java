@@ -45,10 +45,9 @@ public class UsuarioService {
             if (isVazio(u.getDocumento())) {
                 throw new Exception("Documento é obrigatório para transportador.");
             }
-            if (isVazio(u.getVeiculo())) {
-                throw new Exception("Tipo de veículo é obrigatório para transportador.");
-            }
+            // Veículo agora é opcional - será cadastrado no CRUD de veículos
         }
+
 
         // Extrair DDD do telefone automaticamente
         String ddd = extrairDDD(u.getTelefone());

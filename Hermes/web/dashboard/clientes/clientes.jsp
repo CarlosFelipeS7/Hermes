@@ -59,7 +59,7 @@
                 <i class="fas fa-plus-circle"></i> Solicitar Novo Frete
             </a>
             <a href="${pageContext.request.contextPath}/FreteServlet?action=listar"
-            class="btn btn-secondary">
+            class="btn btn-primaryzda">
             <i class="fas fa-list"></i> Ver Todos
         </a>
         </div>

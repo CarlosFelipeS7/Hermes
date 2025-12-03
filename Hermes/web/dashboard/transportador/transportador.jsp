@@ -26,6 +26,17 @@
     
     // Inicializar o serviço para verificar permissões
     FreteService freteService = new FreteService();
+    
+    // Carregar veículos do usuário logado
+    VeiculoService veiculoService = new VeiculoService();
+    List<Veiculo> veiculos = veiculoService.listarPorUsuario(idUsuario, tipoUsuario);
+
+    if (veiculos == null) {
+        veiculos = java.util.Collections.emptyList();
+    }
+
+
+
 %>
 
 <!DOCTYPE html>
@@ -398,7 +409,7 @@
             </a>
                 
                 <!-- NOVO BOTÃO PARA GERENCIAR VEÍCULOS -->
-            <a href="${pageContext.request.contextPath}/VeiculoServlet" class="btn btn-success" style="margin-left: 10px;">
+            <a href="<%= request.getContextPath() %>/VeiculoServlet" class="btn btn-primary">
                 <i class="fas fa-truck"></i> Gerenciar Meus Veículos
             </a>
         </div>
@@ -567,57 +578,68 @@
             </div>
         <% } %>
         
-            <div class="veiculos-container">
-            <div class="page-header">
-                <h1 class="page-title">Meus Veículos</h1>
-                <button class="btn btn-primary" onclick="abrirModalCadastro()">
-                    <i class="fas fa-plus"></i> Cadastrar Veículo
-                </button>
+            <div class="veiculos-container" style="margin-top: 50px;">
+                <h2 class="fretes-title">Meus Veículos</h2>
+                <% if (veiculos.isEmpty()) { %>
+
+                    <div class="empty-state">
+                        <i class="fas fa-truck fa-3x"></i>
+                        <h3>Nenhum veículo cadastrado</h3>
+                        <p>Cadastre seu primeiro veículo para começar a aceitar fretes.</p>
+                        <a href="${pageContext.request.contextPath}/dashboard/transportador/cadastrarVeiculo.jsp"
+                           class="btn btn-primary" style="margin-top: 1rem;">
+                             Cadastrar Veículo
+                        </a>
+                    </div>
+
+                <% } else { %>
+
+                    <div class="fretes-grid">
+                        <% for (Veiculo v : veiculos) { %>
+
+                            <div class="frete-card" style="border-left: 4px solid #2ecc71;">
+
+                                <!-- Título / Placa -->
+                                <div class="frete-header">
+                                    <h3>
+                                        <i class="fas fa-truck"></i>
+                                        <%= v.getMarca() %> <%= v.getModelo() %>
+                                    </h3>
+                                    <span class="frete-status concluido"><%= v.getPlaca() %></span>
+                                </div>
+
+                                <!-- Informações -->
+                                <div class="frete-info">
+                                    <p><strong>Tipo:</strong> <%= v.getTipoVeiculo() %></p>
+                                    <p><strong>Ano:</strong> <%= v.getAno() %></p>
+                                    <p><strong>Capacidade:</strong> <%= String.format("%.2f", v.getCapacidade()) %> kg</p>
+                                    <p><strong>Cor:</strong> <%= v.getCor() != null ? v.getCor() : "Não informada" %></p>
+                                    <p><strong>Cadastrado em:</strong> 
+                                        <%= v.getDataCadastro() != null 
+                                            ? v.getDataCadastro().toLocalDateTime().toLocalDate() 
+                                            : "" %>
+                                    </p>
+                                </div>
+
+                                <div class="frete-actions">
+                                    <button class="btn btn-danger btn-small btn-excluir-veiculo"
+                                            data-veiculo-id="<%= v.getId() %>"
+                                            data-veiculo-modelo="<%= v.getMarca() %> <%= v.getModelo() %>"
+                                            data-veiculo-placa="<%= v.getPlaca() %>">
+                                        <i class="fas fa-trash"></i> Excluir
+                                    </button>
+                                </div>
+                            </div>
+
+                        <% } %>
+                    </div>
+
+                <% } %>
+
             </div>
 
-            <% if (veiculos.isEmpty()) { %>
-                <div class="empty-state">
-                    <i class="fas fa-truck fa-3x"></i>
-                    <h3>Nenhum veículo cadastrado</h3>
-                    <p>Cadastre seu primeiro veículo para começar a aceitar fretes.</p>
-                    <button class="btn btn-primary" onclick="abrirModalCadastro()" style="margin-top: 1rem;">
-                        <i class="fas fa-plus"></i> Cadastrar Primeiro Veículo
-                    </button>
-                </div>
-            <% } else { %>
-                <div class="veiculos-grid">
-                    <% for (Veiculo v : veiculos) { %>
-                        <div class="veiculo-card" id="veiculo-<%= v.getId() %>">
-                            <div class="veiculo-header">
-                                <h3><%= v.getMarca() %> <%= v.getModelo() %></h3>
-                                <span class="veiculo-placa"><%= v.getPlaca() %></span>
-                            </div>
 
-                            <div class="veiculo-info">
-                                <p><strong>Tipo:</strong> <%= v.getTipoVeiculo() %></p>
-                                <p><strong>Ano:</strong> <%= v.getAno() %></p>
-                                <p><strong>Cor:</strong> <%= v.getCor() != null ? v.getCor() : "Não informada" %></p>
-                                <p><strong>Capacidade:</strong> <%= String.format("%.2f", v.getCapacidade()) %> kg</p>
-                                <p><strong>Cadastrado em:</strong> 
-                                    <%= v.getDataCadastro() != null ? v.getDataCadastro().toLocalDate() : "" %>
-                                </p>
-                            </div>
 
-                            <div class="veiculo-actions">
-                                <button class="btn btn-danger btn-small btn-excluir-veiculo" 
-                                        data-veiculo-id="<%= v.getId() %>"
-                                        data-veiculo-modelo="<%= v.getMarca() %> <%= v.getModelo() %>"
-                                        data-veiculo-placa="<%= v.getPlaca() %>">
-                                    <i class="fas fa-trash"></i> Excluir
-                                </button>
-                            </div>
-                        </div>
-                    <% } %>
-                </div>
-            <% } %>
-        </div>
-
-    </div>
 </section>
 
 <!-- Modal de Confirmação de Exclusão -->

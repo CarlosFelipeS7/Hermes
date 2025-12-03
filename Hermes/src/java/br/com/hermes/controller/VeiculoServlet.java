@@ -5,137 +5,176 @@ import br.com.hermes.service.VeiculoService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.*;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.List;
 
-@WebServlet("/VeiculoServlet")
+@WebServlet(name = "VeiculoServlet", urlPatterns = {"/VeiculoServlet"})
 public class VeiculoServlet extends HttpServlet {
-    private VeiculoService veiculoService;
+
+    private final VeiculoService veiculoService = new VeiculoService();
 
     @Override
-    public void init() throws ServletException {
-        this.veiculoService = new VeiculoService();
-    }
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String action = request.getParameter("action");
         HttpSession session = request.getSession();
-        
-        // Verificar se usuário está logado
         Integer idUsuario = (Integer) session.getAttribute("usuarioId");
         String tipoUsuario = (String) session.getAttribute("usuarioTipo");
-        
-        if (idUsuario == null) {
-            response.sendRedirect("../../auth/login/login.jsp");
+
+        if (idUsuario == null || tipoUsuario == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login/login.jsp");
             return;
         }
 
-        // Verificar se é transportador
-        if (!"transportador".equals(tipoUsuario)) {
-            sendJsonResponse(response, false, "Apenas transportadores podem cadastrar veículos");
-            return;
-        }
+        tipoUsuario = tipoUsuario.trim().toLowerCase();
 
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+        String action = request.getParameter("action");
 
-        try {
-            if ("cadastrar".equals(action)) {
-                cadastrarVeiculo(request, response, idUsuario);
-            } else if ("excluir".equals(action)) {
-                excluirVeiculo(request, response, idUsuario);
-            } else {
-                sendJsonResponse(response, false, "Ação inválida");
+        // ============================
+        //       TELA DE EDIÇÃO
+        // ============================
+        if (action != null && action.equals("editar")) {
+
+            String idParam = request.getParameter("id");
+
+            if (idParam == null || idParam.isEmpty()) {
+                session.setAttribute("mensagemErro", "ID do veículo não informado.");
+                response.sendRedirect(request.getContextPath() + "/VeiculoServlet");
+                return;
             }
+
+            try {
+                int idVeiculo = Integer.parseInt(idParam);
+
+                // *** LINHA 50 AJUSTADA: tratar a Exception do Service/DAO ***
+                Veiculo v = veiculoService.buscarPorId(idVeiculo);
+
+                if (v == null) {
+                    session.setAttribute("mensagemErro", "Veículo não encontrado.");
+                    response.sendRedirect(request.getContextPath() + "/VeiculoServlet");
+                    return;
+                }
+
+                request.setAttribute("veiculo", v);
+                request.getRequestDispatcher("/dashboard/transportador/editarVeiculo.jsp")
+                       .forward(request, response);
+                return;
+
+            } catch (NumberFormatException e) {
+                session.setAttribute("mensagemErro", "ID inválido.");
+                response.sendRedirect(request.getContextPath() + "/VeiculoServlet");
+                return;
+
+            } catch (Exception e) {
+                // Exceção vinda do service/DAO (buscarPorId)
+                e.printStackTrace();
+                session.setAttribute("mensagemErro", "Erro ao carregar veículo: " + e.getMessage());
+                response.sendRedirect(request.getContextPath() + "/VeiculoServlet");
+                return;
+            }
+        }
+
+        // ============================
+        // LISTA DE VEÍCULOS
+        // ============================
+        try {
+            List<Veiculo> veiculos = veiculoService.listarPorUsuario(idUsuario, tipoUsuario);
+            request.setAttribute("veiculos", veiculos);
+
+            request.getRequestDispatcher("/dashboard/transportador/veiculos.jsp")
+                    .forward(request, response);
+
         } catch (Exception e) {
-            sendJsonResponse(response, false, "Erro: " + e.getMessage());
+            e.printStackTrace();
+            session.setAttribute("mensagemErro", e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/dashboard/transportador/transportador.jsp");
         }
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        request.setCharacterEncoding("UTF-8");
+
         HttpSession session = request.getSession();
         Integer idUsuario = (Integer) session.getAttribute("usuarioId");
+        String tipoUsuario = (String) session.getAttribute("usuarioTipo");
 
-        if (idUsuario == null) {
-            response.sendRedirect("../../auth/login/login.jsp");
+        if (idUsuario == null || tipoUsuario == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login/login.jsp");
             return;
         }
 
-        try {
-            var veiculos = veiculoService.listarVeiculosPorUsuario(idUsuario);
-            request.setAttribute("veiculos", veiculos);
-            request.getRequestDispatcher("/dashboard/veiculo/veiculo.jsp").forward(request, response);
-        } catch (Exception e) {
-            request.setAttribute("error", "Erro ao carregar veículos: " + e.getMessage());
-            request.getRequestDispatcher("/dashboard/veiculo/veiculo.jsp").forward(request, response);
-        }
-    }
+        tipoUsuario = tipoUsuario.trim().toLowerCase();
 
-    private void cadastrarVeiculo(HttpServletRequest request, HttpServletResponse response, Integer idUsuario) throws IOException {
-        try {
-            String tipoVeiculo = request.getParameter("tipoVeiculo");
-            String marca = request.getParameter("marca");
-            String modelo = request.getParameter("modelo");
-            int ano = Integer.parseInt(request.getParameter("ano"));
-            String placa = request.getParameter("placa").toUpperCase();
-            double capacidade = Double.parseDouble(request.getParameter("capacidade"));
-            String cor = request.getParameter("cor");
+        String action = request.getParameter("action");
+        if (action == null) action = "";
 
-            Veiculo veiculo = new Veiculo(idUsuario, tipoVeiculo, marca, modelo, ano, placa, capacidade, cor);
-            
-            boolean sucesso = veiculoService.cadastrarVeiculo(veiculo);
-            
-            if (sucesso) {
-                sendJsonResponse(response, true, "Veículo cadastrado com sucesso!");
-            } else {
-                sendJsonResponse(response, false, "Erro ao cadastrar veículo");
+        try {
+            switch (action) {
+                case "cadastrar" -> cadastrarVeiculo(request, response, idUsuario, tipoUsuario);
+                case "atualizar" -> atualizarVeiculo(request, response, idUsuario, tipoUsuario);
+                case "excluir" -> excluirVeiculo(request, response, idUsuario, tipoUsuario);
+                default -> response.sendRedirect(request.getContextPath() + "/VeiculoServlet");
             }
-            
-        } catch (NumberFormatException e) {
-            sendJsonResponse(response, false, "Dados numéricos inválidos");
-        } catch (IllegalArgumentException e) {
-            sendJsonResponse(response, false, e.getMessage());
         } catch (Exception e) {
-            sendJsonResponse(response, false, "Erro interno ao cadastrar veículo");
+            e.printStackTrace();
+            session.setAttribute("mensagemErro", e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/VeiculoServlet");
         }
     }
 
-    private void excluirVeiculo(HttpServletRequest request, HttpServletResponse response, Integer idUsuario) throws IOException {
-        try {
-            int idVeiculo = Integer.parseInt(request.getParameter("idVeiculo"));
-            
-            boolean sucesso = veiculoService.excluirVeiculo(idVeiculo, idUsuario);
-            
-            if (sucesso) {
-                sendJsonResponse(response, true, "Veículo excluído com sucesso!");
-            } else {
-                sendJsonResponse(response, false, "Erro ao excluir veículo ou veículo não encontrado");
-            }
-            
-        } catch (NumberFormatException e) {
-            sendJsonResponse(response, false, "ID do veículo inválido");
-        } catch (Exception e) {
-            sendJsonResponse(response, false, "Erro interno ao excluir veículo");
-        }
+    private void cadastrarVeiculo(HttpServletRequest request, HttpServletResponse response,
+                                  int idUsuario, String tipoUsuario) throws Exception {
+
+        Veiculo v = new Veiculo();
+        v.setTipoVeiculo(request.getParameter("tipoVeiculo"));
+        v.setMarca(request.getParameter("marca"));
+        v.setModelo(request.getParameter("modelo"));
+        v.setAno(Integer.parseInt(request.getParameter("ano")));
+        v.setPlaca(request.getParameter("placa"));
+        v.setCapacidade(Double.parseDouble(request.getParameter("capacidade")));
+        v.setCor(request.getParameter("cor"));
+        v.setAtivo(true);
+
+        veiculoService.cadastrar(v, idUsuario, tipoUsuario);
+
+        request.getSession().setAttribute("mensagemSucesso", "Veículo cadastrado com sucesso!");
+        response.sendRedirect(request.getContextPath() + "/VeiculoServlet");
     }
 
-    private void sendJsonResponse(HttpServletResponse response, boolean success, String message) throws IOException {
-        PrintWriter out = response.getWriter();
-        
-        // Criar JSON manualmente
-        String json = String.format(
-            "{\"success\": %s, \"message\": \"%s\"}",
-            success,
-            message.replace("\"", "\\\"") // Escapar aspas
-        );
-        
-        out.print(json);
-        out.flush();
+    private void atualizarVeiculo(HttpServletRequest request, HttpServletResponse response,
+                                  int idUsuario, String tipoUsuario) throws Exception {
+
+        int idVeiculo = Integer.parseInt(request.getParameter("id"));
+
+        Veiculo v = new Veiculo();
+        v.setId(idVeiculo);
+        v.setTipoVeiculo(request.getParameter("tipoVeiculo"));
+        v.setMarca(request.getParameter("marca"));
+        v.setModelo(request.getParameter("modelo"));
+        v.setAno(Integer.parseInt(request.getParameter("ano")));
+        v.setPlaca(request.getParameter("placa"));
+        v.setCapacidade(Double.parseDouble(request.getParameter("capacidade")));
+        v.setCor(request.getParameter("cor"));
+        v.setAtivo("on".equals(request.getParameter("ativo")));
+
+        veiculoService.atualizar(v, idUsuario, tipoUsuario);
+
+        request.getSession().setAttribute("mensagemSucesso", "Veículo atualizado com sucesso!");
+        response.sendRedirect(request.getContextPath() + "/VeiculoServlet");
+    }
+
+    private void excluirVeiculo(HttpServletRequest request, HttpServletResponse response,
+                                int idUsuario, String tipoUsuario) throws Exception {
+
+        int idVeiculo = Integer.parseInt(request.getParameter("id"));
+
+        veiculoService.excluir(idVeiculo, idUsuario, tipoUsuario);
+
+        request.getSession().setAttribute("mensagemSucesso", "Veículo excluído com sucesso!");
+        response.sendRedirect(request.getContextPath() + "/VeiculoServlet");
     }
 }
